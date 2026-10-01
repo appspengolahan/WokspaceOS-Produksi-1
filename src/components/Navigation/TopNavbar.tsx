@@ -7,7 +7,8 @@ import {
   RefreshCw, 
   ShieldCheck, 
   Menu,
-  Database
+  Database,
+  FileDown
 } from 'lucide-react';
 import { PWAInstallButton } from '../PWAInstallButton';
 import { UserProfile, UserRole } from '../../types';
@@ -133,6 +134,17 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         >
           {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-sky-300" />}
         </button>
+
+        {/* Download Blueprint PDF Button */}
+        <a
+          href="/BLUEPRINT_WORKSPACE_PP1_BATU_KARANG.pdf"
+          download="BLUEPRINT_WORKSPACE_PP1_BATU_KARANG.pdf"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition"
+          title="Download Master Blueprint & Roadmap (PDF Resmi)"
+        >
+          <FileDown className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Unduh PDF</span>
+        </a>
 
         {/* Install PWA Button */}
         <PWAInstallButton />
