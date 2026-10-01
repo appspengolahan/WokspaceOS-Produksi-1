@@ -1,0 +1,8 @@
+{
+  "name": "Divisi Produksi 1 - Workspace OS",
+  "description": "Unified Workspace OS dan Single Board Web Apps Divisi Produksi 1 PT Batu Karang: Monitoring Stok, Rekap Proses Cengkeh, Tembakau, Krosok & Blend, HR & Pekerja, Persuratan & SPP terintegrasi Google Sheets GAS V2.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
