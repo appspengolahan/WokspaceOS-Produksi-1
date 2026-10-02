@@ -282,6 +282,7 @@ export const INITIAL_APPS_REGISTRY: AppRegistryItem[] = [
     status: 'Aktif',
     pic: 'Manajer Operasional / Lalu M.',
     icon: 'Users',
+    externalUrl: 'https://hr-pekerja-pro-api.vercel.app/',
     sheetsUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
     sheetTabName: 'Data_Karyawan_PP1',
     lastSync: '8 Menit yang lalu',

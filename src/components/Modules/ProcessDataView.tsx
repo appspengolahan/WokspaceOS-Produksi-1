@@ -264,7 +264,10 @@ export const ProcessDataView: React.FC<ProcessDataViewProps> = ({
             </div>
           </div>
 
-          <div className={`relative w-full bg-slate-950 flex-1 ${isExpanded ? 'h-[calc(100vh-42px)]' : 'h-[82vh] min-h-[680px]'}`}>
+          <div 
+            style={{ minHeight: isExpanded ? 'calc(100vh - 46px)' : '900px', height: isExpanded ? 'calc(100vh - 46px)' : '900px' }}
+            className="relative w-full bg-slate-950 flex-1 overflow-hidden"
+          >
             {isIframeLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white z-10 space-y-2">
                 <RefreshCw className="w-6 h-6 animate-spin text-amber-500" />
@@ -276,7 +279,8 @@ export const ProcessDataView: React.FC<ProcessDataViewProps> = ({
               key={iframeKey}
               src={tembakauVercelUrl}
               title="Monitoring Data Proses Tembakau - Live Vercel"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 block"
+              style={{ width: '100%', height: '100%', minHeight: isExpanded ? 'calc(100vh - 46px)' : '900px' }}
               onLoad={() => setIsIframeLoading(false)}
               allow="camera; microphone; geolocation"
             />

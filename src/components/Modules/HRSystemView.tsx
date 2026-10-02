@@ -235,16 +235,17 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
               : 'rounded-2xl'
           }`}
         >
-          <div className="px-4 py-2.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-semibold text-slate-200">Modul Live HR Pekerja:</span>
+          {/* Sub-header for the embedded frame with height controls */}
+          <div className="px-4 py-2.5 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="font-semibold text-slate-200 shrink-0">Modul Live HR Pekerja:</span>
               <span className="font-mono text-sky-400 truncate max-w-xs md:max-w-md">
                 {hrVercelUrl}
               </span>
               {isExpanded && (
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-blue-600/30 text-sky-300 text-[10px] font-semibold border border-blue-500/40">
-                  Mode Layar Penuh (Maximized Workspace)
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-blue-600/30 text-sky-300 text-[10px] font-semibold border border-blue-500/40 shrink-0">
+                  Mode Layar Penuh (Maximized)
                 </span>
               )}
             </div>
@@ -255,7 +256,7 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
                   setIsIframeLoading(true);
                   setIframeKey(prev => prev + 1);
                 }}
-                className="p-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition"
                 title="Muat Ulang Frame"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isIframeLoading ? 'animate-spin' : ''}`} />
@@ -264,7 +265,7 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
               {/* In-Workspace Maximize / Restore Toggle */}
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer shadow-xs"
                 title={isExpanded ? 'Kecilkan Frame (Restore)' : 'Maksimalkan Modul (Layar Penuh Workspace)'}
               >
                 {isExpanded ? (
@@ -284,7 +285,7 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
                 href={hrVercelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
                 title="Buka Tab Baru (External)"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -292,7 +293,10 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
             </div>
           </div>
 
-          <div className={`relative w-full bg-slate-950 flex-1 ${isExpanded ? 'h-[calc(100vh-42px)]' : 'h-[82vh] min-h-[680px]'}`}>
+          <div 
+            style={{ minHeight: isExpanded ? 'calc(100vh - 46px)' : '900px', height: isExpanded ? 'calc(100vh - 46px)' : '900px' }}
+            className="relative w-full bg-slate-950 flex-1 overflow-hidden"
+          >
             {isIframeLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white z-10 space-y-2">
                 <RefreshCw className="w-6 h-6 animate-spin text-indigo-500" />
@@ -304,7 +308,8 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
               key={iframeKey}
               src={hrVercelUrl}
               title="HR Pekerja & Karyawan PP1 - Live Vercel"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 block"
+              style={{ width: '100%', height: '100%', minHeight: isExpanded ? 'calc(100vh - 46px)' : '900px' }}
               onLoad={() => setIsIframeLoading(false)}
               allow="camera; microphone; geolocation"
             />
