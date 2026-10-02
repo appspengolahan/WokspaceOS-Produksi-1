@@ -20,6 +20,16 @@ export interface UserProfile {
   canManageLinks?: boolean;
 }
 
+export interface SidebarMenuItem {
+  id: string;
+  name: string;
+  shortName: string;
+  iconName: string;
+  badge?: string | number;
+  badgeColor?: string;
+  adminOnly?: boolean;
+}
+
 export type AppCategory = 
   | 'Persediaan & Stok'
   | 'Data Proses Produksi'

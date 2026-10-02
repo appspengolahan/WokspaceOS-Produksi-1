@@ -9,7 +9,8 @@ import {
   Menu,
   Database,
   FileDown,
-  UserCog
+  UserCog,
+  Sliders
 } from 'lucide-react';
 import { PWAInstallButton } from '../PWAInstallButton';
 import { UserProfile, UserRole } from '../../types';
@@ -23,6 +24,7 @@ interface TopNavbarProps {
   onSelectUser: (user: UserProfile) => void;
   onOpenGasModal: () => void;
   onOpenAccessModal?: () => void;
+  onOpenEditMenuModal?: () => void;
   isSyncing: boolean;
   onManualSync: () => void;
 }
@@ -36,6 +38,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onSelectUser,
   onOpenGasModal,
   onOpenAccessModal,
+  onOpenEditMenuModal,
   isSyncing,
   onManualSync,
 }) => {
@@ -137,6 +140,18 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           >
             <UserCog className="w-3.5 h-3.5 text-purple-300" />
             <span className="hidden lg:inline">Akses Role</span>
+          </button>
+        )}
+
+        {/* Developer Customization of Sidebar Menu Names */}
+        {onOpenEditMenuModal && currentUser.role === 'developer' && (
+          <button
+            onClick={onOpenEditMenuModal}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-600/30 hover:bg-sky-600/50 text-sky-200 border border-sky-500/40 transition-all cursor-pointer"
+            title="Kustomisasi Nama Menu Sidebar (Khusus Developer / Engineer)"
+          >
+            <Sliders className="w-3.5 h-3.5 text-sky-300" />
+            <span className="hidden xl:inline">Edit Menu</span>
           </button>
         )}
 

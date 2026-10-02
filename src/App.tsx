@@ -17,6 +17,7 @@ import { CRMClientsView } from './components/Modules/CRMClientsView';
 import { GeneralMonitoringView } from './components/Modules/GeneralMonitoringView';
 import { GoogleSheetsSyncModal } from './components/Modules/GoogleSheetsSyncModal';
 import { AccessManagementModal } from './components/Navigation/AccessManagementModal';
+import { EditSidebarMenuModal } from './components/Navigation/EditSidebarMenuModal';
 
 import { useTheme } from './hooks/useTheme';
 import { 
@@ -29,7 +30,8 @@ import {
   INITIAL_EMPLOYEES, 
   INITIAL_PURCHASE_REQUESTS, 
   INITIAL_CRM_CLIENTS, 
-  INITIAL_GAS_CONFIGS 
+  INITIAL_GAS_CONFIGS,
+  INITIAL_SIDEBAR_MENU
 } from './data/mockData';
 import { 
   AppRegistryItem, 
@@ -41,7 +43,8 @@ import {
   PurchaseRequestRecord, 
   CRMClientRecord, 
   GasSheetConnectionConfig, 
-  UserProfile 
+  UserProfile,
+  SidebarMenuItem
 } from './types';
 import { ChevronRight, CheckCircle2, Home } from 'lucide-react';
 
@@ -54,6 +57,32 @@ export default function App() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const [isGasModalOpen, setIsGasModalOpen] = useState<boolean>(false);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState<boolean>(false);
+  const [isEditMenuModalOpen, setIsEditMenuModalOpen] = useState<boolean>(false);
+
+  // Dynamic Sidebar Menu Items state (Editable by Developer)
+  const [sidebarMenuItems, setSidebarMenuItems] = useState<SidebarMenuItem[]>(() => {
+    const saved = localStorage.getItem('pp1_sidebar_menu_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return INITIAL_SIDEBAR_MENU;
+      }
+    }
+    return INITIAL_SIDEBAR_MENU;
+  });
+
+  const handleSaveSidebarMenuItems = (updatedItems: SidebarMenuItem[]) => {
+    setSidebarMenuItems(updatedItems);
+    localStorage.setItem('pp1_sidebar_menu_v1', JSON.stringify(updatedItems));
+    showToast('Nama-nama menu sidebar berhasil diperbarui!');
+  };
+
+  const handleResetSidebarMenuItems = () => {
+    setSidebarMenuItems(INITIAL_SIDEBAR_MENU);
+    localStorage.removeItem('pp1_sidebar_menu_v1');
+    showToast('Nama-nama menu sidebar telah direset ke bawaan default PP1.');
+  };
 
   // User and RBAC state
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>(INITIAL_USER_PROFILES);
@@ -259,25 +288,11 @@ export default function App() {
     }, 3500);
   };
 
-  // Breadcrumbs text helper
+  // Breadcrumbs text helper (dynamically reflects custom names from sidebarMenuItems)
   const getBreadcrumbTitle = () => {
-    switch (currentModule) {
-      case 'single_board': return 'Pusat Navigasi Single Board';
-      case 'stock_monitoring': return 'Monitoring Stock Bahan Baku';
-      case 'stock_mutation': return 'Mutasi & Arus Persediaan';
-      case 'general_monitoring': return 'General Monitoring Pabrik';
-      case 'process_cengkeh': return 'Rekap Data Proses Cengkeh';
-      case 'process_tembakau': return 'Rekap Data Proses Tembakau';
-      case 'process_krosok': return 'Rekap Data Proses Krosok';
-      case 'process_blend': return 'Rekap Data Proses Blend';
-      case 'log_surat': return 'Log Surat & Pengarsipan';
-      case 'hr_karyawan': return 'HR & Database Tenaga Kerja';
-      case 'hr_presensi': return 'Presensi GPS Lokasi Pabrik';
-      case 'hr_kpi': return 'Matriks Pengukuran KPI';
-      case 'purchase_spp': return 'Surat Permintaan Pembelian (SPP)';
-      case 'crm_clients': return 'CRM Clients & Mitra Industri';
-      default: return 'Portal Divisi Produksi 1';
-    }
+    const matched = sidebarMenuItems.find(m => m.id === currentModule);
+    if (matched) return matched.name;
+    return 'Portal Divisi Produksi 1';
   };
 
   return (
@@ -292,6 +307,7 @@ export default function App() {
         onSelectUser={setCurrentUser}
         onOpenGasModal={() => setIsGasModalOpen(true)}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
+        onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
         isSyncing={isSyncing}
         onManualSync={handleManualSync}
       />
@@ -306,6 +322,8 @@ export default function App() {
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           userRole={currentUser.role}
           stockAlertCount={stockAlertCount}
+          menuItems={sidebarMenuItems}
+          onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
         />
 
         {/* Main Content Area */}
@@ -436,6 +454,8 @@ export default function App() {
         onOpenDrawer={() => setIsMobileDrawerOpen(true)}
         userRole={currentUser.role}
         stockAlertCount={stockAlertCount}
+        menuItems={sidebarMenuItems}
+        onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
       />
 
       {/* Google Sheets GAS V2 Modular Sync Modal */}
@@ -458,6 +478,16 @@ export default function App() {
         onUpdateUser={handleUpdateUser}
         onAddUser={handleAddUser}
         onDeleteUser={handleDeleteUser}
+      />
+
+      {/* Edit Sidebar Menu Modal (Exclusive for Developer / Apps Engineer) */}
+      <EditSidebarMenuModal
+        isOpen={isEditMenuModalOpen}
+        onClose={() => setIsEditMenuModalOpen(false)}
+        menuItems={sidebarMenuItems}
+        onSaveMenuItems={handleSaveSidebarMenuItems}
+        onResetToDefault={handleResetSidebarMenuItems}
+        userRole={currentUser.role}
       />
 
       {/* Real-time Notification Toast */}

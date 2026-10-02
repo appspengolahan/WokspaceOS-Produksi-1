@@ -8,7 +8,8 @@ import {
   PurchaseRequestRecord, 
   CRMClientRecord,
   GasSheetConnectionConfig,
-  UserProfile
+  UserProfile,
+  SidebarMenuItem
 } from '../types';
 
 export const INITIAL_USER_PROFILES: UserProfile[] = [
@@ -133,6 +134,111 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     canManageUsers: false,
     canManageLinks: false,
   }
+];
+
+export const INITIAL_SIDEBAR_MENU: SidebarMenuItem[] = [
+  {
+    id: 'single_board',
+    name: 'Single Board Apps PP1',
+    shortName: 'Board',
+    iconName: 'LayoutGrid',
+  },
+  {
+    id: 'stock_monitoring',
+    name: 'Monitoring Stock PP1',
+    shortName: 'Stok',
+    iconName: 'Boxes',
+    badgeColor: 'bg-amber-500 text-white',
+  },
+  {
+    id: 'stock_mutation',
+    name: 'Mutasi Stock PP1',
+    shortName: 'Mutasi',
+    iconName: 'ArrowLeftRight',
+  },
+  {
+    id: 'general_monitoring',
+    name: 'General Monitoring',
+    shortName: 'General',
+    iconName: 'Gauge',
+  },
+  {
+    id: 'process_cengkeh',
+    name: 'Data Proses Cengkeh',
+    shortName: 'Cengkeh',
+    iconName: 'Flower2',
+  },
+  {
+    id: 'process_tembakau',
+    name: 'Data Proses Tembakau',
+    shortName: 'Tembakau',
+    iconName: 'Leaf',
+  },
+  {
+    id: 'process_krosok',
+    name: 'Data Proses Krosok',
+    shortName: 'Krosok',
+    iconName: 'Layers',
+  },
+  {
+    id: 'process_blend',
+    name: 'Data Proses Blend',
+    shortName: 'Blend',
+    iconName: 'Shuffle',
+  },
+  {
+    id: 'log_surat',
+    name: 'Log Surat & Template',
+    shortName: 'Surat',
+    iconName: 'MailCheck',
+  },
+  {
+    id: 'hr_karyawan',
+    name: 'HR & Pekerja Harian',
+    shortName: 'HR',
+    iconName: 'Users',
+  },
+  {
+    id: 'hr_presensi',
+    name: 'Presensi GPS Lokasi',
+    shortName: 'GPS',
+    iconName: 'MapPin',
+  },
+  {
+    id: 'hr_kpi',
+    name: 'Pengukuran KPI',
+    shortName: 'KPI',
+    iconName: 'Award',
+    adminOnly: true,
+  },
+  {
+    id: 'purchase_spp',
+    name: 'Surat Permintaan (SPP)',
+    shortName: 'SPP',
+    iconName: 'ShoppingCart',
+    badge: 5,
+    badgeColor: 'bg-blue-600 text-white',
+  },
+  {
+    id: 'crm_clients',
+    name: 'CRM Clients Hub',
+    shortName: 'CRM',
+    iconName: 'Building2',
+  },
+  {
+    id: 'formula_blend',
+    name: 'Formula Blend Lab',
+    shortName: 'Formula',
+    iconName: 'SlidersHorizontal',
+    adminOnly: true,
+  },
+  {
+    id: 'gas_router',
+    name: 'GAS V2 Sync Router',
+    shortName: 'GAS V2',
+    iconName: 'Database',
+    adminOnly: true,
+  },
 ];
 
 export const INITIAL_APPS_REGISTRY: AppRegistryItem[] = [
