@@ -12,32 +12,126 @@ import {
 } from '../types';
 
 export const INITIAL_USER_PROFILES: UserProfile[] = [
+  // 1. Developer / Apps Engineer (Full Akses + Developer features)
   {
-    id: 'user_1',
-    name: 'Lalu M. Rahmatullah',
+    id: 'user_dev_1',
+    name: 'Obee Tools',
+    email: 'obeetools@gmail.com',
+    role: 'developer',
+    roleTitle: 'Developer / Apps Engineer',
+    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    division: 'Engineering & System Core',
+    allowedModules: ['all'],
+    canManageUsers: true,
+    canManageLinks: true,
+  },
+  {
+    id: 'user_dev_2',
+    name: 'Loe Hendra',
+    email: 'loehendra@gmail.com',
+    role: 'developer',
+    roleTitle: 'Developer / Apps Engineer',
+    avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
+    division: 'Engineering & System Core',
+    allowedModules: ['all'],
+    canManageUsers: true,
+    canManageLinks: true,
+  },
+
+  // 2. Manajer Operasional / Project Manager (Full Akses kecuali fitur developer internal)
+  {
+    id: 'user_pm_1',
+    name: 'Lalu M. Rahmatullah (Divisi 1)',
+    email: 'divisi1.bkr@gmail.com',
     role: 'project_manager',
     roleTitle: 'Manajer Operasional / Project Manager',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     division: 'Divisi Produksi 1 (PP1)',
-    allowedModules: ['all']
+    allowedModules: ['all'],
+    canManageUsers: true,
+    canManageLinks: true,
   },
   {
-    id: 'user_2',
-    name: 'Ahmad Faisal ST',
+    id: 'user_pm_2',
+    name: 'Pengolahan PP1',
+    email: 'pengolahan.pp1@gmail.com',
+    role: 'project_manager',
+    roleTitle: 'Manajer Operasional / Project Manager',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    division: 'Divisi Produksi 1 (PP1)',
+    allowedModules: ['all'],
+    canManageUsers: true,
+    canManageLinks: true,
+  },
+
+  // 3. Super Admin (Email ditentukan belakangan)
+  {
+    id: 'user_super_admin',
+    name: 'Super Admin PP1',
+    email: 'superadmin.pp1@batukarang.co.id',
     role: 'super_admin',
     roleTitle: 'Super Admin Sistem & Database',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    division: 'Divisi IT & Otomasi Pabrik',
-    allowedModules: ['all']
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+    division: 'Head Office & IT',
+    allowedModules: ['all'],
+    canManageUsers: true,
+    canManageLinks: true,
   },
+
+  // 4. Kepala Admin 1 (Email ditentukan belakangan)
   {
-    id: 'user_3',
-    name: 'Budi Santoso',
+    id: 'user_ka_admin',
+    name: 'Kepala Admin 1',
+    email: 'kepala.admin1@batukarang.co.id',
+    role: 'kepala_admin_1',
+    roleTitle: 'Kepala Administrasi & Logistik PP1',
+    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    division: 'Administrasi & Persuratan PP1',
+    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'log_surat', 'purchase_spp', 'crm_clients', 'hr_presensi'],
+    canManageUsers: false,
+    canManageLinks: false,
+  },
+
+  // 5. Kepala Pengolahan 1 (Email ditentukan belakangan)
+  {
+    id: 'user_ka_olah_1',
+    name: 'Kepala Pengolahan 1 (Cengkeh & Tembakau)',
+    email: 'kepala.pengolahan1@batukarang.co.id',
+    role: 'kepala_pengolahan_1',
+    roleTitle: 'Kepala Pengolahan Lini 1 & 2',
+    avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    division: 'Lini Pengolahan Cengkeh & Tembakau',
+    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring', 'process_cengkeh', 'process_tembakau', 'hr_presensi'],
+    canManageUsers: false,
+    canManageLinks: false,
+  },
+
+  // 6. Kepala Pengolahan 2 (Email ditentukan belakangan)
+  {
+    id: 'user_ka_olah_2',
+    name: 'Kepala Pengolahan 2 (Krosok & Blend)',
+    email: 'kepala.pengolahan2@batukarang.co.id',
+    role: 'kepala_pengolahan_2',
+    roleTitle: 'Kepala Pengolahan Lini 3 & 4',
+    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+    division: 'Lini Fermentasi Krosok & Homogenisasi Blend',
+    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring', 'process_krosok', 'process_blend', 'hr_presensi'],
+    canManageUsers: false,
+    canManageLinks: false,
+  },
+
+  // 7. Staff (Email ditentukan belakangan)
+  {
+    id: 'user_staff_1',
+    name: 'Staff Lapangan / Operator PP1',
+    email: 'staff.operasional@batukarang.co.id',
     role: 'staff_operasional',
-    roleTitle: 'Staff Foreperson / Mandor Operasional',
+    roleTitle: 'Staff Foreperson / Operator Mesin',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-    division: 'Divisi Produksi 1 - Jalur Perajangan',
-    allowedModules: ['single_board', 'stock_monitoring', 'process_cengkeh', 'process_tembakau', 'process_krosok', 'process_blend', 'hr_presensi']
+    division: 'Operasional Pabrik PP1',
+    allowedModules: ['single_board', 'stock_monitoring', 'process_cengkeh', 'process_tembakau', 'process_krosok', 'process_blend', 'hr_presensi'],
+    canManageUsers: false,
+    canManageLinks: false,
   }
 ];
 

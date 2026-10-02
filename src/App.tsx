@@ -16,6 +16,7 @@ import { PurchaseRequestView } from './components/Modules/PurchaseRequestView';
 import { CRMClientsView } from './components/Modules/CRMClientsView';
 import { GeneralMonitoringView } from './components/Modules/GeneralMonitoringView';
 import { GoogleSheetsSyncModal } from './components/Modules/GoogleSheetsSyncModal';
+import { AccessManagementModal } from './components/Navigation/AccessManagementModal';
 
 import { useTheme } from './hooks/useTheme';
 import { 
@@ -52,8 +53,10 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(true); // Mini Rail mode default for modern compact feel
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const [isGasModalOpen, setIsGasModalOpen] = useState<boolean>(false);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState<boolean>(false);
 
   // User and RBAC state
+  const [userProfiles, setUserProfiles] = useState<UserProfile[]>(INITIAL_USER_PROFILES);
   const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_USER_PROFILES[0]);
 
   // Operational Data state
@@ -73,6 +76,11 @@ export default function App() {
 
   // Critical stock alert count
   const stockAlertCount = stockItems.filter(s => s.status === 'Kritis' || s.status === 'Menipis').length;
+
+  // Dynamic Vercel URLs derived from apps registry or custom configuration
+  const stockVercelUrl = apps.find(a => a.moduleId === 'stock_monitoring')?.externalUrl || 'https://monitoring-stock-pp-1-pro-api.vercel.app/';
+  const tembakauVercelUrl = apps.find(a => a.moduleId === 'process_tembakau')?.externalUrl;
+  const hrVercelUrl = apps.find(a => a.moduleId === 'hr_karyawan')?.externalUrl;
 
   // Handlers
   const handleSelectModule = (moduleId: string) => {
@@ -97,10 +105,39 @@ export default function App() {
       visibility: newApp.visibility || 'Internal Divisi',
       status: 'Aktif',
       pic: newApp.pic || 'Manajer Operasional / Lalu M.',
-      icon: 'LayoutGrid',
-      lastSync: 'Baru saja'
+      icon: newApp.category === 'HR & Ketenagakerjaan' ? 'Users' : newApp.category === 'Data Proses Produksi' ? 'Leaf' : 'LayoutGrid',
+      externalUrl: newApp.externalUrl,
+      lastSync: newApp.lastSync || 'Baru saja'
     };
     setApps(prev => [fullApp, ...prev]);
+    showToast(`Web app ${fullApp.name} berhasil ditambahkan ke Single Board!`);
+  };
+
+  const handleUpdateApp = (updatedApp: AppRegistryItem) => {
+    setApps(prev => prev.map(a => a.id === updatedApp.id ? updatedApp : a));
+    showToast(`Web app ${updatedApp.name} berhasil diperbarui!`);
+  };
+
+  const handleUpdateUser = (updatedUser: UserProfile) => {
+    setUserProfiles(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if (currentUser.id === updatedUser.id) {
+      setCurrentUser(updatedUser);
+    }
+    showToast(`Akses pengguna ${updatedUser.name} (${updatedUser.email}) berhasil diperbarui!`);
+  };
+
+  const handleAddUser = (newUser: Omit<UserProfile, 'id'>) => {
+    const user: UserProfile = {
+      id: `user_${Date.now()}`,
+      ...newUser
+    };
+    setUserProfiles(prev => [...prev, user]);
+    showToast(`Pengguna baru ${user.name} (${user.email}) berhasil didaftarkan!`);
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    setUserProfiles(prev => prev.filter(u => u.id !== userId));
+    showToast('Pengguna berhasil dihapus.');
   };
 
   const handleAddMutation = (newMut: Omit<StockMutation, 'id' | 'date'>) => {
@@ -251,9 +288,10 @@ export default function App() {
         isDark={isDark}
         onToggleTheme={toggleTheme}
         currentUser={currentUser}
-        availableUsers={INITIAL_USER_PROFILES}
+        availableUsers={userProfiles}
         onSelectUser={setCurrentUser}
         onOpenGasModal={() => setIsGasModalOpen(true)}
+        onOpenAccessModal={() => setIsAccessModalOpen(true)}
         isSyncing={isSyncing}
         onManualSync={handleManualSync}
       />
@@ -295,6 +333,7 @@ export default function App() {
               userRole={currentUser.role}
               onOpenGasModal={() => setIsGasModalOpen(true)}
               onAddNewApp={handleAddNewApp}
+              onUpdateApp={handleUpdateApp}
             />
           )}
 
@@ -306,7 +345,7 @@ export default function App() {
               onUpdateStock={handleUpdateStock}
               userRole={currentUser.role}
               onOpenGasModal={() => setIsGasModalOpen(true)}
-              vercelUrl="https://monitoring-stock-pp-1-pro-api.vercel.app/"
+              vercelUrl={stockVercelUrl}
             />
           )}
 
@@ -334,6 +373,7 @@ export default function App() {
               onAddProcessRecord={handleAddProcessRecord}
               userRole={currentUser.role}
               onOpenGasModal={() => setIsGasModalOpen(true)}
+              tembakauVercelUrl={tembakauVercelUrl}
             />
           )}
 
@@ -363,6 +403,7 @@ export default function App() {
               employees={employees}
               onAddEmployee={handleAddEmployee}
               userRole={currentUser.role}
+              hrVercelUrl={hrVercelUrl}
             />
           )}
 
@@ -406,6 +447,17 @@ export default function App() {
           setGasConfigs(prev => prev.map(c => c.moduleId === updated.moduleId ? updated : c));
         }}
         onTriggerSync={handleTriggerModuleSync}
+      />
+
+      {/* User Access & Email Management Modal (Developer & PM Authority) */}
+      <AccessManagementModal
+        isOpen={isAccessModalOpen}
+        onClose={() => setIsAccessModalOpen(false)}
+        users={userProfiles}
+        currentUser={currentUser}
+        onUpdateUser={handleUpdateUser}
+        onAddUser={handleAddUser}
+        onDeleteUser={handleDeleteUser}
       />
 
       {/* Real-time Notification Toast */}

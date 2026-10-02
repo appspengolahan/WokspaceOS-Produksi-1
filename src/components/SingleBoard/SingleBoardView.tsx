@@ -8,7 +8,8 @@ import {
   Sparkles,
   ArrowRight,
   Database,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Edit3
 } from 'lucide-react';
 import { AppRegistryItem, UserRole } from '../../types';
 
@@ -18,6 +19,7 @@ interface SingleBoardViewProps {
   userRole: UserRole;
   onOpenGasModal: () => void;
   onAddNewApp: (newApp: Partial<AppRegistryItem>) => void;
+  onUpdateApp?: (app: AppRegistryItem) => void;
 }
 
 export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
@@ -26,6 +28,7 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
   userRole,
   onOpenGasModal,
   onAddNewApp,
+  onUpdateApp,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua Kategori');
@@ -33,13 +36,19 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>('Semua Status');
   const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingApp, setEditingApp] = useState<AppRegistryItem | null>(null);
 
-  // Form state for adding new app
+  // Permission check: Developer and Manager can edit and add links/apps
+  const canManageAppsAndLinks = userRole === 'developer' || userRole === 'project_manager' || userRole === 'super_admin';
+
+  // Form state for adding/editing app
   const [newAppName, setNewAppName] = useState('');
   const [newAppDesc, setNewAppDesc] = useState('');
   const [newAppCat, setNewAppCat] = useState<string>('Persediaan & Stok');
   const [newAppVis, setNewAppVis] = useState<'Internal Divisi' | 'Manajemen' | 'Publik'>('Internal Divisi');
   const [newAppPic, setNewAppPic] = useState('Manajer Operasional / Lalu M.');
+  const [newAppVercelUrl, setNewAppVercelUrl] = useState('');
+  const [newAppModuleId, setNewAppModuleId] = useState('single_board');
 
   // Categories list
   const categories = [
@@ -84,23 +93,66 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
   const activeCount = apps.filter((a) => a.status === 'Aktif').length;
   const adminOnlyCount = apps.filter((a) => a.adminOnly).length;
 
-  const handleCreateApp = (e: React.FormEvent) => {
+  const handleOpenEditModal = (app: AppRegistryItem) => {
+    setEditingApp(app);
+    setNewAppName(app.name);
+    setNewAppDesc(app.description);
+    setNewAppCat(app.category);
+    setNewAppVis(app.visibility);
+    setNewAppPic(app.pic);
+    setNewAppVercelUrl(app.externalUrl || '');
+    setNewAppModuleId(app.moduleId || 'single_board');
+    setShowAddModal(true);
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingApp(null);
+    setNewAppName('');
+    setNewAppDesc('');
+    setNewAppCat('Persediaan & Stok');
+    setNewAppVis('Internal Divisi');
+    setNewAppPic('Manajer Operasional / Lalu M.');
+    setNewAppVercelUrl('');
+    setNewAppModuleId('single_board');
+    setShowAddModal(true);
+  };
+
+  const handleCreateOrUpdateApp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAppName.trim()) return;
 
-    onAddNewApp({
-      name: newAppName.toUpperCase(),
-      description: newAppDesc || 'Aplikasi operasional Divisi Produksi 1 PT Batu Karang',
-      category: newAppCat as any,
-      visibility: newAppVis,
-      status: 'Aktif',
-      pic: newAppPic,
-      moduleId: 'single_board',
-      sheetTabName: `Sheet_${Date.now()}`
-    });
+    if (editingApp && onUpdateApp) {
+      onUpdateApp({
+        ...editingApp,
+        name: newAppName.toUpperCase(),
+        description: newAppDesc || editingApp.description,
+        category: newAppCat as any,
+        visibility: newAppVis,
+        pic: newAppPic,
+        moduleId: newAppModuleId || editingApp.moduleId,
+        externalUrl: newAppVercelUrl.trim() || undefined,
+        lastSync: newAppVercelUrl.trim() ? 'Live Connected (Vercel)' : editingApp.lastSync,
+      });
+    } else {
+      onAddNewApp({
+        name: newAppName.toUpperCase(),
+        description: newAppDesc || 'Aplikasi operasional Divisi Produksi 1 PT Batu Karang',
+        category: newAppCat as any,
+        visibility: newAppVis,
+        status: 'Aktif',
+        pic: newAppPic,
+        moduleId: newAppModuleId || 'single_board',
+        externalUrl: newAppVercelUrl.trim() || undefined,
+        lastSync: newAppVercelUrl.trim() ? 'Live Connected (Vercel)' : 'Baru saja',
+        sheetTabName: `Sheet_${Date.now()}`
+      });
+    }
 
+    setEditingApp(null);
     setNewAppName('');
     setNewAppDesc('');
+    setNewAppVercelUrl('');
+    setNewAppModuleId('single_board');
     setShowAddModal(false);
   };
 
@@ -234,11 +286,11 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
             </button>
           </div>
 
-          {/* Super Admin Add Button */}
-          {userRole !== 'staff_operasional' && (
+          {/* Add App Button (Authorized for Developer, PM, and Super Admin) */}
+          {canManageAppsAndLinks && (
             <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs cursor-pointer"
+              onClick={handleOpenCreateModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Tambah App</span>
@@ -334,6 +386,16 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
                     </a>
                   )}
 
+                  {canManageAppsAndLinks && (
+                    <button
+                      onClick={() => handleOpenEditModal(app)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                      title="Edit Link Vercel & Data Web App"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  )}
+
                   <button
                     onClick={() => onOpenApp(app)}
                     className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 active:scale-95 text-white transition-all shadow-xs cursor-pointer"
@@ -382,35 +444,47 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
               </div>
 
               <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 truncate max-w-[150px]">
+                <span className="text-[11px] text-slate-400 truncate max-w-[130px]">
                   {app.pic}
                 </span>
 
-                <button
-                  onClick={() => onOpenApp(app)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer"
-                >
-                  <span>Buka</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {canManageAppsAndLinks && (
+                    <button
+                      onClick={() => handleOpenEditModal(app)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                      title="Edit Link Vercel & Data Web App"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => onOpenApp(app)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer"
+                  >
+                    <span>Buka</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Add New App Modal */}
+      {/* Add / Edit App Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6">
             <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
-              Daftarkan Web App / Modul Baru PP1
+              {editingApp ? 'Edit Web App & Link Vercel' : 'Daftarkan Web App / Modul Baru PP1'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Tambahkan entri sistem ke dalam Master Single Board Apps Divisi Produksi 1.
+              {editingApp ? 'Perbarui URL Vercel, kategori, atau penanggung jawab modul.' : 'Tambahkan entri sistem ke dalam Master Single Board Apps Divisi Produksi 1.'}
             </p>
 
-            <form onSubmit={handleCreateApp} className="space-y-3.5">
+            <form onSubmit={handleCreateOrUpdateApp} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Nama Aplikasi (Kapital)
@@ -468,6 +542,42 @@ export const SingleBoardView: React.FC<SingleBoardViewProps> = ({
                     <option value="Publik">Publik</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  URL Vercel / Web App Live (Opsional)
+                </label>
+                <input
+                  type="url"
+                  value={newAppVercelUrl}
+                  onChange={(e) => setNewAppVercelUrl(e.target.value)}
+                  placeholder="https://monitoring-proses-tembakau.vercel.app/"
+                  className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                />
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Jika diisi, app akan memiliki lencana Live Vercel dan dapat dibuka langsung atau embedded.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Koneksikan ke Modul Internal
+                </label>
+                <select
+                  value={newAppModuleId}
+                  onChange={(e) => setNewAppModuleId(e.target.value)}
+                  className="w-full px-2.5 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="single_board">Single Board (Buka Link External)</option>
+                  <option value="process_tembakau">Monitoring Proses Tembakau</option>
+                  <option value="hr_karyawan">HR Karyawan & Pekerja</option>
+                  <option value="stock_monitoring">Monitoring Stock PP1</option>
+                  <option value="process_cengkeh">Monitoring Proses Cengkeh</option>
+                  <option value="process_krosok">Monitoring Proses Krosok</option>
+                  <option value="process_blend">Monitoring Proses Blend</option>
+                  <option value="general_monitoring">General Monitoring</option>
+                </select>
               </div>
 
               <div>

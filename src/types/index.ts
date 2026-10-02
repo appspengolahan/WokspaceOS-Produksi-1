@@ -1,13 +1,23 @@
-export type UserRole = 'super_admin' | 'project_manager' | 'staff_operasional';
+export type UserRole = 
+  | 'developer'             // 1. Developer/Apps Engineer (Full akses termasuk pengaturan sistem & developer)
+  | 'project_manager'       // 2. Manajer Operasional/Project Manager (Full akses kecuali fitur internal developer)
+  | 'super_admin'           // 3. Super Admin
+  | 'kepala_admin_1'        // 4. Kepala Admin 1
+  | 'kepala_pengolahan_1'   // 5. Kepala Pengolahan 1
+  | 'kepala_pengolahan_2'   // 6. Kepala Pengolahan 2
+  | 'staff_operasional';    // 7. Staff
 
 export interface UserProfile {
   id: string;
   name: string;
+  email: string;
   role: UserRole;
   roleTitle: string;
   avatarUrl: string;
   division: string;
   allowedModules: string[];
+  canManageUsers?: boolean;
+  canManageLinks?: boolean;
 }
 
 export type AppCategory = 

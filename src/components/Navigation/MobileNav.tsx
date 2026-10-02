@@ -85,7 +85,14 @@ export const MobileNav: React.FC<MobileNavProps> = ({
 
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {allDrawerItems.map((item) => {
-                if (item.adminOnly && userRole === 'staff_operasional') return null;
+                if (item.adminOnly) {
+                  if (item.id === 'gas_router' && userRole !== 'developer' && userRole !== 'super_admin') {
+                    return null;
+                  }
+                  if (userRole === 'staff_operasional' || userRole === 'kepala_admin_1') {
+                    return null;
+                  }
+                }
                 const Icon = item.icon;
                 const isActive = currentModule === item.id;
                 return (

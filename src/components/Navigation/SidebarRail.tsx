@@ -155,8 +155,14 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
   ];
 
   const filteredNavItems = navItems.filter(item => {
-    if (item.adminOnly && userRole === 'staff_operasional') {
-      return false;
+    // Developer features (Formula Blend Lab and GAS V2 router) are restricted to developer, PM and Super Admin
+    if (item.adminOnly) {
+      if (item.id === 'gas_router' && userRole !== 'developer' && userRole !== 'super_admin') {
+        return false;
+      }
+      if (userRole === 'staff_operasional' || userRole === 'kepala_admin_1') {
+        return false;
+      }
     }
     return true;
   });

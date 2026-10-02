@@ -8,7 +8,8 @@ import {
   ShieldCheck, 
   Menu,
   Database,
-  FileDown
+  FileDown,
+  UserCog
 } from 'lucide-react';
 import { PWAInstallButton } from '../PWAInstallButton';
 import { UserProfile, UserRole } from '../../types';
@@ -21,6 +22,7 @@ interface TopNavbarProps {
   availableUsers: UserProfile[];
   onSelectUser: (user: UserProfile) => void;
   onOpenGasModal: () => void;
+  onOpenAccessModal?: () => void;
   isSyncing: boolean;
   onManualSync: () => void;
 }
@@ -33,6 +35,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   availableUsers,
   onSelectUser,
   onOpenGasModal,
+  onOpenAccessModal,
   isSyncing,
   onManualSync,
 }) => {
@@ -57,12 +60,20 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
+      case 'developer':
+        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">Developer / Engineer</span>;
+      case 'project_manager':
+        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-sky-300 border border-blue-500/40">Manager Operasional</span>;
       case 'super_admin':
         return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">Super Admin</span>;
-      case 'project_manager':
-        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-sky-300 border border-blue-500/40">Manager PP1</span>;
+      case 'kepala_admin_1':
+        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">Kepala Admin 1</span>;
+      case 'kepala_pengolahan_1':
+        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Kepala Pengolahan 1</span>;
+      case 'kepala_pengolahan_2':
+        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">Kepala Pengolahan 2</span>;
       default:
-        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Staff PP1</span>;
+        return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-500/20 text-slate-300 border border-slate-500/40">Staff Lapangan</span>;
     }
   };
 
@@ -110,12 +121,24 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         {/* GAS V2 Config Modal Button */}
         <button
           onClick={onOpenGasModal}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition-all"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition-all cursor-pointer"
           title="Buka Pengaturan Spreadsheet & Endpoint Router"
         >
           <Database className="w-3.5 h-3.5 text-sky-400" />
           <span className="hidden md:inline">Sheets Hub</span>
         </button>
+
+        {/* Pengaturan Akses & Email Modal Button (Accessible by Developer, PM, and Super Admin) */}
+        {onOpenAccessModal && (currentUser.role === 'developer' || currentUser.role === 'project_manager' || currentUser.role === 'super_admin') && (
+          <button
+            onClick={onOpenAccessModal}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 transition-all cursor-pointer"
+            title="Pengaturan Akses Pengguna & Email Resmi"
+          >
+            <UserCog className="w-3.5 h-3.5 text-purple-300" />
+            <span className="hidden lg:inline">Akses Role</span>
+          </button>
+        )}
 
         {/* Fullscreen Toggle */}
         <button

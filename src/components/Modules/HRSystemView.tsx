@@ -10,7 +10,12 @@ import {
   Phone, 
   Search, 
   Navigation,
-  Crosshair
+  Crosshair,
+  Globe,
+  LayoutDashboard,
+  ExternalLink,
+  Maximize2,
+  RefreshCw
 } from 'lucide-react';
 import { EmployeeRecord, AttendanceGPSRecord, UserRole } from '../../types';
 
@@ -19,6 +24,7 @@ interface HRSystemViewProps {
   employees: EmployeeRecord[];
   onAddEmployee: (employee: Omit<EmployeeRecord, 'id'>) => void;
   userRole: UserRole;
+  hrVercelUrl?: string;
 }
 
 export const HRSystemView: React.FC<HRSystemViewProps> = ({
@@ -26,8 +32,14 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
   employees,
   onAddEmployee,
   userRole,
+  hrVercelUrl,
 }) => {
   const [activeTab, setActiveTab] = useState<'karyawan' | 'presensi' | 'kpi' | 'rekrutmen'>(initialSubTab);
+  const [displaySource, setDisplaySource] = useState<'vercel_live' | 'portal_native'>(
+    hrVercelUrl ? 'vercel_live' : 'portal_native'
+  );
+  const [iframeKey, setIframeKey] = useState<number>(1);
+  const [isIframeLoading, setIsIframeLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStationFilter, setSelectedStationFilter] = useState('Semua');
   const [showAddEmpModal, setShowAddEmpModal] = useState(false);
@@ -161,7 +173,47 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
           </h2>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {hrVercelUrl && (
+            <div className="flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-300 dark:border-slate-700">
+              <button
+                onClick={() => setDisplaySource('vercel_live')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  displaySource === 'vercel_live'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Vercel Live App</span>
+              </button>
+              <button
+                onClick={() => setDisplaySource('portal_native')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  displaySource === 'portal_native'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Tampilan Portal</span>
+              </button>
+            </div>
+          )}
+
+          {hrVercelUrl && (
+            <a
+              href={hrVercelUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              title="Buka Live di Tab Baru"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+              <span className="hidden sm:inline">Buka Tab</span>
+            </a>
+          )}
+
           <button
             onClick={() => setShowAddEmpModal(true)}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition cursor-pointer"
@@ -172,6 +224,64 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
         </div>
       </div>
 
+      {/* EMBEDDED VERCEL LIVE APPLICATION FOR HR PEKERJA */}
+      {displaySource === 'vercel_live' && hrVercelUrl && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-md overflow-hidden flex flex-col">
+          <div className="px-4 py-2.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-semibold text-slate-200">Modul Live HR Pekerja:</span>
+              <span className="font-mono text-sky-400 truncate max-w-xs md:max-w-md">
+                {hrVercelUrl}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsIframeLoading(true);
+                  setIframeKey(prev => prev + 1);
+                }}
+                className="p-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                title="Muat Ulang Frame"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isIframeLoading ? 'animate-spin' : ''}`} />
+              </button>
+              <a
+                href={hrVercelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                title="Buka Layar Penuh di Tab Terpisah"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="relative w-full h-[78vh] min-h-[620px] bg-slate-950">
+            {isIframeLoading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white z-10 space-y-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-indigo-500" />
+                <p className="text-xs font-medium">Memuat Modul HR Pekerja Live Vercel...</p>
+                <span className="text-[11px] text-slate-400">{hrVercelUrl}</span>
+              </div>
+            )}
+            <iframe
+              key={iframeKey}
+              src={hrVercelUrl}
+              title="HR Pekerja & Karyawan PP1 - Live Vercel"
+              className="w-full h-full border-0"
+              onLoad={() => setIsIframeLoading(false)}
+              allow="camera; microphone; geolocation"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* PORTAL NATIVE CONTENT (Shown when not in Vercel Live mode or no URL set) */}
+      {(displaySource === 'portal_native' || !hrVercelUrl) && (
+        <>
       {/* Sub Tabs */}
       <div className="flex flex-wrap items-center gap-2 bg-slate-200/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-700">
         <button
@@ -579,6 +689,8 @@ export const HRSystemView: React.FC<HRSystemViewProps> = ({
             </form>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
