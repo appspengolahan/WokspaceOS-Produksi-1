@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Globe,
   Maximize2,
+  Minimize2,
   RefreshCw,
   LayoutDashboard
 } from 'lucide-react';
@@ -39,6 +40,7 @@ export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
   vercelUrl = 'https://monitoring-stock-pp-1-pro-api.vercel.app/',
 }) => {
   const [displaySource, setDisplaySource] = useState<'vercel_live' | 'portal_native'>('vercel_live');
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [iframeKey, setIframeKey] = useState<number>(1);
   const [isIframeLoading, setIsIframeLoading] = useState<boolean>(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
@@ -220,7 +222,13 @@ export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
 
       {/* EMBEDDED VERCEL LIVE APPLICATION */}
       {displaySource === 'vercel_live' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-md overflow-hidden flex flex-col">
+        <div 
+          className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col transition-all duration-300 ${
+            isExpanded 
+              ? 'fixed inset-0 z-50 rounded-none w-screen h-screen' 
+              : 'rounded-2xl'
+          }`}
+        >
           {/* Sub-header for the embedded frame */}
           <div className="px-4 py-2.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 text-xs">
             <div className="flex items-center gap-2">
@@ -229,6 +237,11 @@ export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
               <span className="font-mono text-sky-400 truncate max-w-xs md:max-w-md">
                 {vercelUrl}
               </span>
+              {isExpanded && (
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-blue-600/30 text-sky-300 text-[10px] font-semibold border border-blue-500/40">
+                  Mode Layar Penuh (Maximized Workspace)
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -242,25 +255,45 @@ export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isIframeLoading ? 'animate-spin' : ''}`} />
               </button>
+
+              {/* In-Workspace Maximize / Restore Toggle */}
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer shadow-xs"
+                title={isExpanded ? 'Kecilkan Frame (Restore)' : 'Maksimalkan Modul (Layar Penuh Workspace)'}
+              >
+                {isExpanded ? (
+                  <>
+                    <Minimize2 className="w-3.5 h-3.5" />
+                    <span>Perkecil</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Layar Penuh</span>
+                  </>
+                )}
+              </button>
+
               <a
                 href={vercelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition"
-                title="Buka Layar Penuh di Tab Terpisah"
+                className="p-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+                title="Buka Tab Baru (External)"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
 
           {/* Iframe Viewport Container */}
-          <div className="relative w-full h-[78vh] min-h-[620px] bg-slate-950">
+          <div className={`relative w-full bg-slate-950 flex-1 ${isExpanded ? 'h-[calc(100vh-42px)]' : 'h-[82vh] min-h-[680px]'}`}>
             {isIframeLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white z-10 space-y-2">
                 <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
                 <p className="text-xs font-medium">Memuat Modul Monitoring Stock Live Vercel...</p>
-                <span className="text-[11px] text-slate-400">https://monitoring-stock-pp-1-pro-api.vercel.app/</span>
+                <span className="text-[11px] text-slate-400">{vercelUrl}</span>
               </div>
             )}
             <iframe
