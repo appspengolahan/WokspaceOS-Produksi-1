@@ -28,6 +28,8 @@ export interface SidebarMenuItem {
   badge?: string | number;
   badgeColor?: string;
   adminOnly?: boolean;
+  isHidden?: boolean;          // Opsi untuk menyembunyikan menu dari sidebar
+  allowedRoles?: UserRole[];   // Hak akses checklist peran yang boleh mengakses menu ini
 }
 
 export type AppCategory = 

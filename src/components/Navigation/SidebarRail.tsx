@@ -66,7 +66,19 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
   const isDeveloper = userRole === 'developer';
 
   const filteredNavItems = menuItems.filter(item => {
-    // Developer features (Formula Blend Lab and GAS V2 router) are restricted to developer, PM and Super Admin
+    // 1. If hidden from sidebar, do not render in navigation
+    if (item.isHidden) {
+      return false;
+    }
+
+    // 2. Role permission check: if allowedRoles is configured, check if current user's role is permitted
+    if (item.allowedRoles && item.allowedRoles.length > 0) {
+      if (!item.allowedRoles.includes(userRole)) {
+        return false;
+      }
+    }
+
+    // 3. Fallback core protections for developer-only administrative modules
     if (item.adminOnly) {
       if (item.id === 'gas_router' && userRole !== 'developer' && userRole !== 'super_admin') {
         return false;

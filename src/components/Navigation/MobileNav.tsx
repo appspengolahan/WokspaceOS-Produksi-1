@@ -66,14 +66,32 @@ export const MobileNav: React.FC<MobileNavProps> = ({
 }) => {
   const isDeveloper = userRole === 'developer';
 
-  // Quick navigation items at bottom bar (Top 5 primary modules)
-  const quickItems = [
-    { id: 'single_board', label: menuItems.find(m => m.id === 'single_board')?.shortName || 'Board', icon: LayoutGrid },
-    { id: 'stock_monitoring', label: menuItems.find(m => m.id === 'stock_monitoring')?.shortName || 'Stok', icon: Boxes, badge: stockAlertCount },
-    { id: 'process_tembakau', label: menuItems.find(m => m.id === 'process_tembakau')?.shortName || 'Proses', icon: Leaf },
-    { id: 'log_surat', label: menuItems.find(m => m.id === 'log_surat')?.shortName || 'Surat', icon: MailCheck },
-    { id: 'hr_karyawan', label: menuItems.find(m => m.id === 'hr_karyawan')?.shortName || 'HR', icon: Users },
+  // Quick navigation items at bottom bar (Top 5 primary modules that are visible and permitted)
+  const candidateQuickItems = [
+    { id: 'single_board', icon: LayoutGrid },
+    { id: 'stock_monitoring', icon: Boxes, badge: stockAlertCount },
+    { id: 'process_tembakau', icon: Leaf },
+    { id: 'log_surat', icon: MailCheck },
+    { id: 'hr_karyawan', icon: Users },
   ];
+
+  const quickItems = candidateQuickItems.filter(q => {
+    const menuItem = menuItems.find(m => m.id === q.id);
+    if (!menuItem) return true;
+    if (menuItem.isHidden) return false;
+    if (menuItem.allowedRoles && menuItem.allowedRoles.length > 0 && !menuItem.allowedRoles.includes(userRole)) {
+      return false;
+    }
+    return true;
+  }).map(q => {
+    const menuItem = menuItems.find(m => m.id === q.id);
+    return {
+      id: q.id,
+      label: menuItem?.shortName || q.id,
+      icon: q.icon,
+      badge: q.badge,
+    };
+  });
 
   return (
     <>
@@ -125,6 +143,17 @@ export const MobileNav: React.FC<MobileNavProps> = ({
             {/* Drawer Nav Items */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800">
               {menuItems.map((item) => {
+                // 1. Check if hidden
+                if (item.isHidden) {
+                  return null;
+                }
+
+                // 2. Check role permission checklist
+                if (item.allowedRoles && item.allowedRoles.length > 0 && !item.allowedRoles.includes(userRole)) {
+                  return null;
+                }
+
+                // 3. Admin-only core protections
                 if (item.adminOnly) {
                   if (item.id === 'gas_router' && userRole !== 'developer' && userRole !== 'super_admin') {
                     return null;
