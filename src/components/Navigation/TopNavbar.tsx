@@ -10,7 +10,8 @@ import {
   Database,
   FileDown,
   UserCog,
-  Sliders
+  Sliders,
+  Bot
 } from 'lucide-react';
 import { PWAInstallButton } from '../PWAInstallButton';
 import { UserProfile, UserRole } from '../../types';
@@ -25,6 +26,7 @@ interface TopNavbarProps {
   onOpenGasModal: () => void;
   onOpenAccessModal?: () => void;
   onOpenEditMenuModal?: () => void;
+  onNavigateToAI?: () => void;
   isSyncing: boolean;
   onManualSync: () => void;
 }
@@ -39,6 +41,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onOpenGasModal,
   onOpenAccessModal,
   onOpenEditMenuModal,
+  onNavigateToAI,
   isSyncing,
   onManualSync,
 }) => {
@@ -120,6 +123,18 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
           <span className="hidden xl:inline text-slate-300">GAS V2 Sync</span>
         </button>
+
+        {/* AI Audit Bot Shortcut */}
+        {onNavigateToAI && (
+          <button
+            onClick={onNavigateToAI}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-blue-600/40 to-indigo-600/40 hover:from-blue-600/60 hover:to-indigo-600/60 text-sky-200 border border-sky-400/40 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="Buka AI Verification & Audit Bot PP1"
+          >
+            <Bot className="w-3.5 h-3.5 text-sky-300 animate-pulse" />
+            <span className="hidden sm:inline">AI Audit Bot</span>
+          </button>
+        )}
 
         {/* GAS V2 Config Modal Button */}
         <button

@@ -18,7 +18,8 @@ import {
   ExternalLink,
   Maximize2,
   Minimize2,
-  RefreshCw
+  RefreshCw,
+  Bot
 } from 'lucide-react';
 import { ProcessBatchRecord, UserRole } from '../../types';
 
@@ -29,6 +30,7 @@ interface ProcessDataViewProps {
   userRole: UserRole;
   onOpenGasModal: () => void;
   tembakauVercelUrl?: string;
+  onNavigateToAIBot?: () => void;
 }
 
 export const ProcessDataView: React.FC<ProcessDataViewProps> = ({
@@ -38,6 +40,7 @@ export const ProcessDataView: React.FC<ProcessDataViewProps> = ({
   userRole,
   onOpenGasModal,
   tembakauVercelUrl,
+  onNavigateToAIBot,
 }) => {
   const [selectedType, setSelectedType] = useState<'Cengkeh' | 'Tembakau' | 'Krosok' | 'Blend'>(initialProcessType);
   const [displaySource, setDisplaySource] = useState<'vercel_live' | 'portal_native'>(
@@ -183,6 +186,17 @@ export const ProcessDataView: React.FC<ProcessDataViewProps> = ({
               <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
               <span className="hidden sm:inline">Buka Tab</span>
             </a>
+          )}
+
+          {onNavigateToAIBot && (
+            <button
+              onClick={onNavigateToAIBot}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-sky-400 border border-sky-500/30 transition cursor-pointer shadow-xs active:scale-95"
+              title="Tugaskan AI Bot Verifikasi data proses ini dengan mutasi stok"
+            >
+              <Bot className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
+              <span>Verifikasi AI</span>
+            </button>
           )}
 
           <button

@@ -102,7 +102,7 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     roleTitle: 'Kepala Pengolahan Lini 1 & 2',
     avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
     division: 'Lini Pengolahan Cengkeh & Tembakau',
-    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring', 'process_cengkeh', 'process_tembakau', 'hr_presensi'],
+    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring', 'ai_verification_bot', 'process_cengkeh', 'process_tembakau', 'hr_presensi'],
     canManageUsers: false,
     canManageLinks: false,
   },
@@ -116,7 +116,7 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     roleTitle: 'Kepala Pengolahan Lini 3 & 4',
     avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
     division: 'Lini Fermentasi Krosok & Homogenisasi Blend',
-    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring', 'process_krosok', 'process_blend', 'hr_presensi'],
+    allowedModules: ['single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring', 'ai_verification_bot', 'process_krosok', 'process_blend', 'hr_presensi'],
     canManageUsers: false,
     canManageLinks: false,
   },
@@ -130,7 +130,7 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     roleTitle: 'Staff Foreperson / Operator Mesin',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
     division: 'Operasional Pabrik PP1',
-    allowedModules: ['single_board', 'stock_monitoring', 'process_cengkeh', 'process_tembakau', 'process_krosok', 'process_blend', 'hr_presensi'],
+    allowedModules: ['single_board', 'stock_monitoring', 'ai_verification_bot', 'process_cengkeh', 'process_tembakau', 'process_krosok', 'process_blend', 'hr_presensi'],
     canManageUsers: false,
     canManageLinks: false,
   }
@@ -161,6 +161,14 @@ export const INITIAL_SIDEBAR_MENU: SidebarMenuItem[] = [
     name: 'General Monitoring',
     shortName: 'General',
     iconName: 'Gauge',
+  },
+  {
+    id: 'ai_verification_bot',
+    name: 'AI Verification & Audit Bot',
+    shortName: 'AI Audit',
+    iconName: 'Bot',
+    badge: 'AI',
+    badgeColor: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black',
   },
   {
     id: 'process_cengkeh',
@@ -302,6 +310,19 @@ export const INITIAL_APPS_REGISTRY: AppRegistryItem[] = [
     sheetTabName: 'General_Dashboard',
     lastSync: '3 Menit yang lalu',
     statsKpi: 'OEE: 91.4%'
+  },
+  {
+    id: 'app_ai_bot',
+    moduleId: 'ai_verification_bot',
+    name: 'AI VERIFICATION & AUDIT BOT PP1',
+    description: 'Audit kecerdasan buatan Gemini: Rekonsiliasi mutasi stok keluar vs rekap proses tembakau, deteksi selisih timbangan & anomali rendemen',
+    category: 'Data Proses Produksi',
+    visibility: 'Internal Divisi',
+    status: 'Aktif',
+    pic: 'Developer / Lalu M. / QC Team',
+    icon: 'Bot',
+    lastSync: 'AI Core Online',
+    statsKpi: 'Cross-Audit AI Ready'
   },
   {
     id: 'app_5',

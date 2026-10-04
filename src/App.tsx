@@ -15,6 +15,7 @@ import { HRSystemView } from './components/Modules/HRSystemView';
 import { PurchaseRequestView } from './components/Modules/PurchaseRequestView';
 import { CRMClientsView } from './components/Modules/CRMClientsView';
 import { GeneralMonitoringView } from './components/Modules/GeneralMonitoringView';
+import { AIVerificationBotView } from './components/Modules/AIVerificationBotView';
 import { GoogleSheetsSyncModal } from './components/Modules/GoogleSheetsSyncModal';
 import { AccessManagementModal } from './components/Navigation/AccessManagementModal';
 import { EditSidebarMenuModal } from './components/Navigation/EditSidebarMenuModal';
@@ -64,7 +65,15 @@ export default function App() {
     const saved = localStorage.getItem('pp1_sidebar_menu_v1');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed: SidebarMenuItem[] = JSON.parse(saved);
+        // Merge in any newly introduced core modules (e.g. ai_verification_bot) if not present
+        const merged = [...parsed];
+        for (const initialItem of INITIAL_SIDEBAR_MENU) {
+          if (!merged.some(m => m.id === initialItem.id)) {
+            merged.push(initialItem);
+          }
+        }
+        return merged;
       } catch (e) {
         return INITIAL_SIDEBAR_MENU;
       }
@@ -308,6 +317,7 @@ export default function App() {
         onOpenGasModal={() => setIsGasModalOpen(true)}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
         onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
+        onNavigateToAI={() => handleSelectModule('ai_verification_bot')}
         isSyncing={isSyncing}
         onManualSync={handleManualSync}
       />
@@ -364,11 +374,22 @@ export default function App() {
               userRole={currentUser.role}
               onOpenGasModal={() => setIsGasModalOpen(true)}
               vercelUrl={stockVercelUrl}
+              onNavigateToAIBot={() => handleSelectModule('ai_verification_bot')}
             />
           )}
 
           {currentModule === 'general_monitoring' && (
             <GeneralMonitoringView
+              onNavigateToModule={handleSelectModule}
+            />
+          )}
+
+          {currentModule === 'ai_verification_bot' && (
+            <AIVerificationBotView
+              mutations={mutations}
+              processRecords={processRecords}
+              stockItems={stockItems}
+              userRole={currentUser.role}
               onNavigateToModule={handleSelectModule}
             />
           )}
@@ -392,6 +413,7 @@ export default function App() {
               userRole={currentUser.role}
               onOpenGasModal={() => setIsGasModalOpen(true)}
               tembakauVercelUrl={tembakauVercelUrl}
+              onNavigateToAIBot={() => handleSelectModule('ai_verification_bot')}
             />
           )}
 

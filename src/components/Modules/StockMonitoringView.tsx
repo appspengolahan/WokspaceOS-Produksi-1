@@ -17,7 +17,8 @@ import {
   Maximize2,
   Minimize2,
   RefreshCw,
-  LayoutDashboard
+  LayoutDashboard,
+  Bot
 } from 'lucide-react';
 import { StockItem, StockMutation, UserRole } from '../../types';
 
@@ -29,6 +30,7 @@ interface StockMonitoringViewProps {
   userRole: UserRole;
   onOpenGasModal: () => void;
   vercelUrl?: string;
+  onNavigateToAIBot?: () => void;
 }
 
 export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
@@ -38,6 +40,7 @@ export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
   userRole,
   onOpenGasModal,
   vercelUrl = 'https://monitoring-stock-pp-1-pro-api.vercel.app/',
+  onNavigateToAIBot,
 }) => {
   const [displaySource, setDisplaySource] = useState<'vercel_live' | 'portal_native'>('vercel_live');
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -186,6 +189,17 @@ export const StockMonitoringView: React.FC<StockMonitoringViewProps> = ({
               <span>Tampilan Portal</span>
             </button>
           </div>
+
+          {onNavigateToAIBot && (
+            <button
+              onClick={onNavigateToAIBot}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-sky-400 border border-sky-500/30 transition cursor-pointer shadow-xs active:scale-95"
+              title="Audit rekonsiliasi data mutasi stok ini dengan rekap proses tembakau"
+            >
+              <Bot className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
+              <span>Verifikasi AI</span>
+            </button>
+          )}
 
           <a
             href={vercelUrl}

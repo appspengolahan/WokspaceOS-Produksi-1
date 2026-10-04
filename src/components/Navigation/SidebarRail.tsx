@@ -18,7 +18,8 @@ import {
   Gauge,
   SlidersHorizontal,
   Award,
-  Edit2
+  Edit2,
+  Bot
 } from 'lucide-react';
 import { UserRole, SidebarMenuItem } from '../../types';
 
@@ -51,6 +52,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Building2,
   SlidersHorizontal,
   Database,
+  Bot,
 };
 
 export const SidebarRail: React.FC<SidebarRailProps> = ({
