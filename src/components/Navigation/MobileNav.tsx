@@ -22,6 +22,7 @@ import {
   Bot
 } from 'lucide-react';
 import { UserRole, SidebarMenuItem } from '../../types';
+import { PWAInstallButton } from '../PWAInstallButton';
 
 interface MobileNavProps {
   currentModule: string;
@@ -195,6 +196,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                   </button>
                 );
               })}
+            </div>
+
+            {/* In-Drawer Mobile PWA Install Button */}
+            <div className="p-3 border-t border-slate-800 bg-slate-900/60">
+              <PWAInstallButton variant="drawer" />
             </div>
 
             {/* Drawer Footer */}

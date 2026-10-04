@@ -22,6 +22,7 @@ import {
   Bot
 } from 'lucide-react';
 import { UserRole, SidebarMenuItem } from '../../types';
+import { PWAInstallButton } from '../PWAInstallButton';
 
 interface SidebarRailProps {
   currentModule: string;
@@ -193,6 +194,13 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
           );
         })}
       </div>
+
+      {/* PWA Install Quick Trigger in Expanded Sidebar */}
+      {!isCollapsed && (
+        <div className="px-3 pt-2 pb-1">
+          <PWAInstallButton variant="drawer" />
+        </div>
+      )}
 
       {/* Rail Mode Footer Info & Quick Developer Edit Trigger */}
       <div className="p-3 border-t border-slate-800/80 bg-slate-950/40">
