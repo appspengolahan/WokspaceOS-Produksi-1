@@ -64,12 +64,20 @@ export const AIVerificationBotView: React.FC<AIVerificationBotViewProps> = ({
         }),
       });
 
-      const data = await response.json();
-      if (data.success && data.analysis) {
+      let data: any = null;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : null;
+      } catch (parseErr: any) {
+        throw new Error(`Respons server tidak valid (${parseErr.message})`);
+      }
+
+      if (data && data.success && data.analysis) {
         setAnalysisResult(data.analysis);
         setLastAuditTimestamp(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
       } else {
-        setAnalysisResult(`❌ Verifikasi Gagal: ${data.error || 'Server tidak dapat mengembalikan hasil audit.'}`);
+        const errorMsg = data?.error || `HTTP ${response.status}: Server tidak dapat mengembalikan hasil audit.`;
+        setAnalysisResult(`❌ Verifikasi Gagal: ${errorMsg}`);
       }
     } catch (err: any) {
       console.error('Error invoking AI bot:', err);

@@ -69,17 +69,34 @@ Dataset:
 ${dataContext}`;
     }
 
-    // Call standard Gemini model for text reasoning
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0.2, // low temperature for precise factual verification
-      }
-    });
+    let answer = '';
+    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+    let lastError: any = null;
 
-    const answer = response.text || 'Tidak ada respons yang dihasilkan oleh model AI.';
+    for (const modelName of candidateModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            systemInstruction,
+            temperature: 0.2, // low temperature for precise factual verification
+          }
+        });
+
+        if (response && response.text) {
+          answer = response.text;
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`Model ${modelName} failed, trying next candidate:`, err.message);
+        lastError = err;
+      }
+    }
+
+    if (!answer) {
+      throw lastError || new Error('Tidak ada respons yang berhasil didapatkan dari AI Model.');
+    }
 
     res.json({
       success: true,
@@ -88,9 +105,19 @@ ${dataContext}`;
     });
   } catch (error: any) {
     console.error('Error during AI verification:', error);
-    res.status(500).json({
+    let errMsg = error.message || 'Terjadi kesalahan saat memproses verifikasi AI.';
+    try {
+      const parsed = JSON.parse(errMsg);
+      if (parsed?.error?.message) {
+        errMsg = parsed.error.message;
+      }
+    } catch {
+      // not a json string
+    }
+
+    res.status(200).json({
       success: false,
-      error: error.message || 'Terjadi kesalahan saat memproses verifikasi AI.',
+      error: errMsg,
     });
   }
 });
