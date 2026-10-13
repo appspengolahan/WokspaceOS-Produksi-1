@@ -306,9 +306,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Navbar */}
+      {/* Top Navbar (Full-Width Global Header on top of Sidebar & Main Content) */}
       <TopNavbar
         onToggleMobileMenu={() => setIsMobileDrawerOpen(true)}
+        isSidebarCollapsed={isSidebarCollapsed}
+        onToggleSidebarCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         isDark={isDark}
         onToggleTheme={toggleTheme}
         currentUser={currentUser}

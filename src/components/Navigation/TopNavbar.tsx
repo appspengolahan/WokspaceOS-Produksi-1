@@ -11,13 +11,17 @@ import {
   FileDown,
   UserCog,
   Sliders,
-  Bot
+  Bot,
+  PanelLeftClose,
+  PanelLeft
 } from 'lucide-react';
 import { PWAInstallButton } from '../PWAInstallButton';
 import { UserProfile, UserRole } from '../../types';
 
 interface TopNavbarProps {
   onToggleMobileMenu: () => void;
+  isSidebarCollapsed?: boolean;
+  onToggleSidebarCollapse?: () => void;
   isDark: boolean;
   onToggleTheme: () => void;
   currentUser: UserProfile;
@@ -33,6 +37,8 @@ interface TopNavbarProps {
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
   onToggleMobileMenu,
+  isSidebarCollapsed = false,
+  onToggleSidebarCollapse,
   isDark,
   onToggleTheme,
   currentUser,
@@ -87,6 +93,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     <header className="h-16 bg-[#0B192C] text-white border-b border-slate-800 flex items-center justify-between px-3 md:px-5 shrink-0 z-20 shadow-md">
       {/* Left Lockup */}
       <div className="flex items-center gap-3">
+        {/* Mobile Menu Trigger */}
         <button
           onClick={onToggleMobileMenu}
           className="md:hidden p-2 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 transition"
@@ -94,6 +101,22 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        {/* Desktop Sidebar Rail Toggle (Seamless Full-Width Header Control) */}
+        {onToggleSidebarCollapse && (
+          <button
+            onClick={onToggleSidebarCollapse}
+            className="hidden md:flex p-2 rounded-lg bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700/80 border border-slate-700/60 transition cursor-pointer"
+            title={isSidebarCollapsed ? 'Buka Sidebar Menu (Expand)' : 'Ciutkan Sidebar Menu (Rail Mode)'}
+            aria-label="Toggle Sidebar"
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeft className="w-4 h-4 text-sky-400" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4 text-slate-300" />
+            )}
+          </button>
+        )}
 
         {/* Brand Badge */}
         <div className="flex items-center gap-2.5">

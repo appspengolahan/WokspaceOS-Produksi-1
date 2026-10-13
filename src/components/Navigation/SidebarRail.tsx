@@ -99,54 +99,49 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
         isCollapsed ? 'w-20' : 'w-72'
       }`}
     >
-      {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-3.5 border-b border-slate-800/80 bg-slate-950/40">
-        <div 
-          onClick={() => onSelectModule('single_board')}
-          className="flex items-center gap-3 cursor-pointer overflow-hidden"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-700 to-amber-600 p-0.5 shadow-md shrink-0 flex items-center justify-center">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <span className="font-extrabold text-sm text-amber-400 tracking-wider">PP1</span>
-            </div>
+      {/* Sidebar Top Section (Under Full-Width Topbar) */}
+      <div className="h-12 flex items-center justify-between px-3 border-b border-slate-800/80 bg-slate-950/30">
+        {!isCollapsed ? (
+          <div className="flex items-center justify-between w-full">
+            <span className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              NAVIGASI OPERASIONAL
+            </span>
+            <button
+              onClick={onToggleCollapse}
+              className="w-7 h-7 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              title="Ciutkan Sidebar (Mini Rail)"
+              aria-label="Collapse Sidebar"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
           </div>
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <div className="font-bold text-sm tracking-tight text-white leading-tight truncate">
-                PT BATU KARANG
-              </div>
-              <div className="text-xs text-sky-400 font-semibold tracking-wide truncate">
-                Divisi Produksi 1
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Toggle Button */}
-        <button
-          onClick={onToggleCollapse}
-          className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-          title={isCollapsed ? 'Buka Sidebar Penuh' : 'Ciutkan Sidebar (Rail Mode)'}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
+        ) : (
+          <div className="w-full flex justify-center">
+            <button
+              onClick={onToggleCollapse}
+              className="w-7 h-7 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              title="Perluas Sidebar"
+              aria-label="Expand Sidebar"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Nav List */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2.5 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800">
-        {!isCollapsed && (
-          <div className="px-3 py-1.5 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
-            <span>MENU OPERASIONAL PP1</span>
-            {isDeveloper && onOpenEditMenuModal && (
-              <button
-                onClick={onOpenEditMenuModal}
-                className="flex items-center gap-1 text-[11px] font-semibold text-sky-400 hover:text-sky-300 normal-case px-2 py-0.5 rounded-md hover:bg-sky-500/10 transition cursor-pointer"
-                title="Edit Nama-Nama Menu Sidebar (Khusus Developer)"
-              >
-                <Edit2 className="w-3 h-3" />
-                <span>Edit</span>
-              </button>
-            )}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 px-2 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800">
+        {!isCollapsed && isDeveloper && onOpenEditMenuModal && (
+          <div className="px-2 pb-1 flex justify-end">
+            <button
+              onClick={onOpenEditMenuModal}
+              className="flex items-center gap-1 text-[10px] font-semibold text-sky-400 hover:text-sky-300 normal-case px-2 py-0.5 rounded-md hover:bg-sky-500/10 transition cursor-pointer"
+              title="Edit Nama-Nama Menu Sidebar (Khusus Developer)"
+            >
+              <Edit2 className="w-3 h-3" />
+              <span>Edit Menu</span>
+            </button>
           </div>
         )}
 
