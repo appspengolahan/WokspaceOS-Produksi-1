@@ -125,7 +125,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           </div>
           <div>
             <h1 className="text-sm md:text-base font-bold tracking-tight text-white leading-tight">
-              Single Board Apps PP1
+              WORKSPACE APPS PP1
             </h1>
             <p className="text-[11px] text-slate-300 hidden sm:block">
               Divisi Produksi I — Pusat Navigasi Web App & Sistem
