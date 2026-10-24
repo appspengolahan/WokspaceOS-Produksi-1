@@ -13,7 +13,8 @@ import {
   Scale, 
   Layers, 
   HelpCircle,
-  Database
+  Database,
+  FileDown
 } from 'lucide-react';
 import { StockMutation, ProcessBatchRecord, StockItem, UserRole } from '../../types';
 import { generateComprehensiveAuditReport } from '../../utils/localAuditEngine';
@@ -163,6 +164,19 @@ ${fallbackReport}`);
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Download PDF Panduan untuk Developer & Manajemen */}
+            {(userRole === 'developer' || userRole === 'project_manager' || userRole === 'super_admin') && (
+              <a
+                href="/PANDUAN_CARA_KERJA_AI_VERIFICATION_BOT_PP1.pdf"
+                download="PANDUAN_CARA_KERJA_AI_VERIFICATION_BOT_PP1.pdf"
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-800/90 hover:bg-slate-700/90 text-purple-300 border border-purple-500/30 transition shadow-sm cursor-pointer"
+                title="Unduh Dokumen PDF Resmi: Panduan Cara Kerja AI Verification & Audit Bot PP1"
+              >
+                <FileDown className="w-4 h-4 text-purple-400" />
+                <span>PDF Panduan AI Bot</span>
+              </a>
+            )}
+
             <button
               onClick={() => runVerification('comprehensive')}
               disabled={isLoading}

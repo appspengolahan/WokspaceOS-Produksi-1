@@ -11,7 +11,9 @@ import {
   AlertCircle,
   KeyRound,
   Shield,
-  UserCheck
+  UserCheck,
+  FileText,
+  BookOpen
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../../types';
 
@@ -180,15 +182,28 @@ export const AccessManagementModal: React.FC<AccessManagementModalProps> = ({
             </span>
           </div>
 
-          {canManage && (
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs shrink-0 cursor-pointer"
+          <div className="flex items-center gap-2">
+            {/* Download PDF Panduan AI Bot (Khusus Developer / Manajer) */}
+            <a
+              href="/PANDUAN_CARA_KERJA_AI_VERIFICATION_BOT_PP1.pdf"
+              download="PANDUAN_CARA_KERJA_AI_VERIFICATION_BOT_PP1.pdf"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 transition shadow-xs shrink-0 cursor-pointer"
+              title="Unduh Panduan PDF Cara Kerja AI Verification & Audit Bot PP1 (Khusus Developer)"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{showAddForm ? 'Tutup Form' : 'Tambah Pengguna'}</span>
-            </button>
-          )}
+              <FileText className="w-3.5 h-3.5 text-purple-400" />
+              <span>PDF Panduan AI Bot</span>
+            </a>
+
+            {canManage && (
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{showAddForm ? 'Tutup Form' : 'Tambah Pengguna'}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Content Body */}
