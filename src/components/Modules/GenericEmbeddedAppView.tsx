@@ -7,7 +7,8 @@ import {
   RefreshCw, 
   ArrowLeft,
   Settings,
-  AlertCircle
+  AlertCircle,
+  LayoutDashboard
 } from 'lucide-react';
 import { SidebarMenuItem, UserRole } from '../../types';
 
@@ -16,6 +17,7 @@ interface GenericEmbeddedAppViewProps {
   userRole: UserRole;
   onOpenEditMenuModal?: () => void;
   onNavigateHome: () => void;
+  onSwitchToNative?: () => void;
 }
 
 export const GenericEmbeddedAppView: React.FC<GenericEmbeddedAppViewProps> = ({
@@ -23,6 +25,7 @@ export const GenericEmbeddedAppView: React.FC<GenericEmbeddedAppViewProps> = ({
   userRole,
   onOpenEditMenuModal,
   onNavigateHome,
+  onSwitchToNative,
 }) => {
   const [iframeKey, setIframeKey] = useState<number>(1);
   const [isIframeLoading, setIsIframeLoading] = useState<boolean>(true);
@@ -70,6 +73,17 @@ export const GenericEmbeddedAppView: React.FC<GenericEmbeddedAppViewProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 shrink-0">
+          {onSwitchToNative && (
+            <button
+              onClick={onSwitchToNative}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition cursor-pointer"
+              title="Beralih ke tampilan internal / formulir lokal PP1"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Tampilan Internal</span>
+            </button>
+          )}
+
           <button
             onClick={handleRefresh}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"

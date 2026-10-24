@@ -121,6 +121,9 @@ export default function App() {
   const tembakauVercelUrl = apps.find(a => a.moduleId === 'process_tembakau')?.externalUrl;
   const hrVercelUrl = apps.find(a => a.moduleId === 'hr_karyawan')?.externalUrl;
 
+  // State to track whether user manually switched to internal native portal view for a module
+  const [viewModeOverrides, setViewModeOverrides] = useState<Record<string, 'embedded' | 'native'>>({});
+
   // Handlers
   const handleSelectModule = (moduleId: string) => {
     const targetMenu = sidebarMenuItems.find(m => m.id === moduleId);
@@ -129,6 +132,11 @@ export default function App() {
     if (targetMenu?.webAppUrl && targetMenu.openMode === 'external_tab') {
       window.open(targetMenu.webAppUrl, '_blank', 'noopener,noreferrer');
       return;
+    }
+
+    // Default back to embedded when clicked from sidebar if URL is present
+    if (targetMenu?.webAppUrl) {
+      setViewModeOverrides(prev => ({ ...prev, [moduleId]: 'embedded' }));
     }
 
     setCurrentModule(moduleId);
@@ -364,141 +372,143 @@ export default function App() {
             </span>
           </div>
 
-          {/* Module Router View */}
-          {currentModule === 'single_board' && (
-            <SingleBoardView
-              apps={apps}
-              onOpenApp={handleOpenApp}
-              userRole={currentUser.role}
-              onOpenGasModal={() => setIsGasModalOpen(true)}
-              onAddNewApp={handleAddNewApp}
-              onUpdateApp={handleUpdateApp}
-            />
-          )}
-
-          {(currentModule === 'stock_monitoring' || currentModule === 'stock_mutation') && (
-            <StockMonitoringView
-              stockItems={stockItems}
-              mutations={mutations}
-              onAddMutation={handleAddMutation}
-              onUpdateStock={handleUpdateStock}
-              userRole={currentUser.role}
-              onOpenGasModal={() => setIsGasModalOpen(true)}
-              vercelUrl={stockVercelUrl}
-              onNavigateToAIBot={() => handleSelectModule('ai_verification_bot')}
-            />
-          )}
-
-          {currentModule === 'general_monitoring' && (
-            <GeneralMonitoringView
-              onNavigateToModule={handleSelectModule}
-            />
-          )}
-
-          {currentModule === 'ai_verification_bot' && (
-            <AIVerificationBotView
-              mutations={mutations}
-              processRecords={processRecords}
-              stockItems={stockItems}
-              userRole={currentUser.role}
-              onNavigateToModule={handleSelectModule}
-            />
-          )}
-
-          {(currentModule === 'process_cengkeh' ||
-            currentModule === 'process_tembakau' ||
-            currentModule === 'process_krosok' ||
-            currentModule === 'process_blend') && (
-            <ProcessDataView
-              initialProcessType={
-                currentModule === 'process_cengkeh'
-                  ? 'Cengkeh'
-                  : currentModule === 'process_krosok'
-                  ? 'Krosok'
-                  : currentModule === 'process_blend'
-                  ? 'Blend'
-                  : 'Tembakau'
-              }
-              processRecords={processRecords}
-              onAddProcessRecord={handleAddProcessRecord}
-              userRole={currentUser.role}
-              onOpenGasModal={() => setIsGasModalOpen(true)}
-              tembakauVercelUrl={tembakauVercelUrl}
-              onNavigateToAIBot={() => handleSelectModule('ai_verification_bot')}
-            />
-          )}
-
-          {currentModule === 'log_surat' && (
-            <LetterArchiveView
-              letters={letters}
-              onAddLetter={handleAddLetter}
-              userRole={currentUser.role}
-              onOpenGasModal={() => setIsGasModalOpen(true)}
-            />
-          )}
-
-          {(currentModule === 'hr_karyawan' ||
-            currentModule === 'hr_presensi' ||
-            currentModule === 'hr_kpi' ||
-            currentModule === 'hr_recruitment') && (
-            <HRSystemView
-              initialSubTab={
-                currentModule === 'hr_presensi'
-                  ? 'presensi'
-                  : currentModule === 'hr_kpi'
-                  ? 'kpi'
-                  : currentModule === 'hr_recruitment'
-                  ? 'rekrutmen'
-                  : 'karyawan'
-              }
-              employees={employees}
-              onAddEmployee={handleAddEmployee}
-              userRole={currentUser.role}
-              hrVercelUrl={hrVercelUrl}
-            />
-          )}
-
-          {currentModule === 'purchase_spp' && (
-            <PurchaseRequestView
-              requests={purchaseRequests}
-              onAddRequest={handleAddPurchaseRequest}
-              onApproveRequest={handleApprovePurchaseRequest}
-              userRole={currentUser.role}
-              currentUserName={currentUser.name}
-            />
-          )}
-
-          {currentModule === 'crm_clients' && (
-            <CRMClientsView
-              clients={crmClients}
-              onAddClient={handleAddClient}
-              userRole={currentUser.role}
-            />
-          )}
-
-          {/* Generic Embedded Web App View if menu is linked to an external web app URL */}
+          {/* Check if current module has an external Web App URL configured with Embedded mode */}
           {(() => {
             const activeMenu = sidebarMenuItems.find(m => m.id === currentModule);
-            const standardInternalModules = [
-              'single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring',
-              'ai_verification_bot', 'process_cengkeh', 'process_tembakau', 'process_krosok',
-              'process_blend', 'log_surat', 'hr_karyawan', 'hr_presensi', 'hr_kpi',
-              'hr_recruitment', 'purchase_spp', 'crm_clients'
-            ];
+            const isOverriddenToNative = viewModeOverrides[currentModule] === 'native';
 
-            // If it's a custom module OR an internal module explicitly configured with embedded webAppUrl
-            if (activeMenu?.webAppUrl && activeMenu.openMode === 'embedded' && (!standardInternalModules.includes(currentModule) || currentModule === 'gas_router' || currentModule === 'formula_blend')) {
+            // If menu has webAppUrl, mode is embedded (or default), and user has not switched to native portal view
+            if (activeMenu?.webAppUrl && activeMenu.openMode !== 'external_tab' && !isOverriddenToNative) {
               return (
                 <GenericEmbeddedAppView
                   menuItem={activeMenu}
                   userRole={currentUser.role}
                   onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
                   onNavigateHome={() => handleSelectModule('single_board')}
+                  onSwitchToNative={() => setViewModeOverrides(prev => ({ ...prev, [currentModule]: 'native' }))}
                 />
               );
             }
             return null;
           })()}
+
+          {/* Module Router View (Native / Internal Portal Views) */}
+          {(!sidebarMenuItems.find(m => m.id === currentModule)?.webAppUrl || 
+            sidebarMenuItems.find(m => m.id === currentModule)?.openMode === 'external_tab' || 
+            viewModeOverrides[currentModule] === 'native') && (
+            <>
+              {currentModule === 'single_board' && (
+                <SingleBoardView
+                  apps={apps}
+                  onOpenApp={handleOpenApp}
+                  userRole={currentUser.role}
+                  onOpenGasModal={() => setIsGasModalOpen(true)}
+                  onAddNewApp={handleAddNewApp}
+                  onUpdateApp={handleUpdateApp}
+                />
+              )}
+
+              {(currentModule === 'stock_monitoring' || currentModule === 'stock_mutation') && (
+                <StockMonitoringView
+                  stockItems={stockItems}
+                  mutations={mutations}
+                  onAddMutation={handleAddMutation}
+                  onUpdateStock={handleUpdateStock}
+                  userRole={currentUser.role}
+                  onOpenGasModal={() => setIsGasModalOpen(true)}
+                  vercelUrl={sidebarMenuItems.find(m => m.id === currentModule)?.webAppUrl || stockVercelUrl}
+                  onNavigateToAIBot={() => handleSelectModule('ai_verification_bot')}
+                />
+              )}
+
+              {currentModule === 'general_monitoring' && (
+                <GeneralMonitoringView
+                  onNavigateToModule={handleSelectModule}
+                />
+              )}
+
+              {currentModule === 'ai_verification_bot' && (
+                <AIVerificationBotView
+                  mutations={mutations}
+                  processRecords={processRecords}
+                  stockItems={stockItems}
+                  userRole={currentUser.role}
+                  onNavigateToModule={handleSelectModule}
+                />
+              )}
+
+              {(currentModule === 'process_cengkeh' ||
+                currentModule === 'process_tembakau' ||
+                currentModule === 'process_krosok' ||
+                currentModule === 'process_blend') && (
+                <ProcessDataView
+                  initialProcessType={
+                    currentModule === 'process_cengkeh'
+                      ? 'Cengkeh'
+                      : currentModule === 'process_krosok'
+                      ? 'Krosok'
+                      : currentModule === 'process_blend'
+                      ? 'Blend'
+                      : 'Tembakau'
+                  }
+                  processRecords={processRecords}
+                  onAddProcessRecord={handleAddProcessRecord}
+                  userRole={currentUser.role}
+                  onOpenGasModal={() => setIsGasModalOpen(true)}
+                  tembakauVercelUrl={sidebarMenuItems.find(m => m.id === currentModule)?.webAppUrl || tembakauVercelUrl}
+                  onNavigateToAIBot={() => handleSelectModule('ai_verification_bot')}
+                />
+              )}
+
+              {currentModule === 'log_surat' && (
+                <LetterArchiveView
+                  letters={letters}
+                  onAddLetter={handleAddLetter}
+                  userRole={currentUser.role}
+                  onOpenGasModal={() => setIsGasModalOpen(true)}
+                />
+              )}
+
+              {(currentModule === 'hr_karyawan' ||
+                currentModule === 'hr_presensi' ||
+                currentModule === 'hr_kpi' ||
+                currentModule === 'hr_recruitment') && (
+                <HRSystemView
+                  initialSubTab={
+                    currentModule === 'hr_presensi'
+                      ? 'presensi'
+                      : currentModule === 'hr_kpi'
+                      ? 'kpi'
+                      : currentModule === 'hr_recruitment'
+                      ? 'rekrutmen'
+                      : 'karyawan'
+                  }
+                  employees={employees}
+                  onAddEmployee={handleAddEmployee}
+                  userRole={currentUser.role}
+                  hrVercelUrl={sidebarMenuItems.find(m => m.id === currentModule)?.webAppUrl || hrVercelUrl}
+                />
+              )}
+
+              {currentModule === 'purchase_spp' && (
+                <PurchaseRequestView
+                  requests={purchaseRequests}
+                  onAddRequest={handleAddPurchaseRequest}
+                  onApproveRequest={handleApprovePurchaseRequest}
+                  userRole={currentUser.role}
+                  currentUserName={currentUser.name}
+                />
+              )}
+
+              {currentModule === 'crm_clients' && (
+                <CRMClientsView
+                  clients={crmClients}
+                  onAddClient={handleAddClient}
+                  userRole={currentUser.role}
+                />
+              )}
+            </>
+          )}
         </main>
       </div>
 

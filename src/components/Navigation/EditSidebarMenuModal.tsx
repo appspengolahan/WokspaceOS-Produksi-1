@@ -81,8 +81,13 @@ export const EditSidebarMenuModal: React.FC<EditSidebarMenuModalProps> = ({
   };
 
   const handleUrlChange = (id: string, newUrl: string) => {
+    const trimmed = newUrl.trim();
     setEditedItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, webAppUrl: newUrl } : item))
+      prev.map((item) => (item.id === id ? { 
+        ...item, 
+        webAppUrl: trimmed, 
+        openMode: item.openMode || 'embedded' 
+      } : item))
     );
   };
 
