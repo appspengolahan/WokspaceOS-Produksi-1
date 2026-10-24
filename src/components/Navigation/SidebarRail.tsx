@@ -129,21 +129,21 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
 
   return (
     <aside 
-      className={`hidden md:flex flex-col bg-slate-900 border-r border-slate-800 text-slate-200 transition-all duration-300 select-none z-30 shrink-0 ${
+      className={`hidden md:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 transition-colors duration-200 select-none z-30 shrink-0 shadow-xs ${
         isCollapsed ? 'w-20' : 'w-72'
       }`}
     >
       {/* Sidebar Top Section (Under Full-Width Topbar) */}
-      <div className="h-12 flex items-center justify-between px-3 border-b border-slate-800/80 bg-slate-950/30">
+      <div className="h-12 flex items-center justify-between px-3 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/30">
         {!isCollapsed ? (
           <div className="flex items-center justify-between w-full">
-            <span className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+            <span className="text-[11px] font-extrabold tracking-wider text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
               NAVIGASI OPERASIONAL
             </span>
             <button
               onClick={onToggleCollapse}
-              className="w-7 h-7 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              className="w-7 h-7 rounded-md bg-slate-200/80 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
               title="Ciutkan Sidebar (Mini Rail)"
               aria-label="Collapse Sidebar"
             >
@@ -154,7 +154,7 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
           <div className="w-full flex justify-center">
             <button
               onClick={onToggleCollapse}
-              className="w-7 h-7 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              className="w-7 h-7 rounded-md bg-slate-200/80 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
               title="Perluas Sidebar"
               aria-label="Expand Sidebar"
             >
@@ -207,10 +207,10 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
               className={`w-full group relative flex items-center gap-3.5 px-3 py-3 rounded-xl font-medium transition-all cursor-pointer ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-md font-semibold ring-1 ring-blue-400/30'
-                  : 'text-slate-300 hover:bg-slate-800/90 hover:text-white'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/90 hover:text-slate-900 dark:hover:text-white'
               } ${isCollapsed ? 'justify-center' : 'justify-start'}`}
             >
-              <Icon className={`w-5 h-5 shrink-0 transition-transform ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-amber-400 group-hover:scale-105'}`} />
+              <Icon className={`w-5 h-5 shrink-0 transition-transform ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-amber-500 dark:group-hover:text-amber-400 group-hover:scale-105'}`} />
               
               {!isCollapsed && (
                 <span className="truncate flex-1 text-left text-sm tracking-wide">
