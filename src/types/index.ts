@@ -30,6 +30,9 @@ export interface SidebarMenuItem {
   adminOnly?: boolean;
   isHidden?: boolean;          // Opsi untuk menyembunyikan menu dari sidebar
   allowedRoles?: UserRole[];   // Hak akses checklist peran yang boleh mengakses menu ini
+  webAppUrl?: string;          // Link sumber Web App eksternal (Vercel, GAS Web App, dll)
+  openMode?: 'internal' | 'external_tab' | 'embedded'; // Cara membuka modul (Internal, Tab Baru, atau Embedded Iframe)
+  sheetsUrl?: string;          // Link Google Sheets terkait modul ini
 }
 
 export type AppCategory = 

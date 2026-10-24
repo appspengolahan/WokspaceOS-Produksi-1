@@ -19,6 +19,7 @@ import { AIVerificationBotView } from './components/Modules/AIVerificationBotVie
 import { GoogleSheetsSyncModal } from './components/Modules/GoogleSheetsSyncModal';
 import { AccessManagementModal } from './components/Navigation/AccessManagementModal';
 import { EditSidebarMenuModal } from './components/Navigation/EditSidebarMenuModal';
+import { GenericEmbeddedAppView } from './components/Modules/GenericEmbeddedAppView';
 
 import { useTheme } from './hooks/useTheme';
 import { 
@@ -122,6 +123,14 @@ export default function App() {
 
   // Handlers
   const handleSelectModule = (moduleId: string) => {
+    const targetMenu = sidebarMenuItems.find(m => m.id === moduleId);
+    
+    // If menu is configured to open external web app directly in new tab
+    if (targetMenu?.webAppUrl && targetMenu.openMode === 'external_tab') {
+      window.open(targetMenu.webAppUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
     setCurrentModule(moduleId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -466,6 +475,30 @@ export default function App() {
               userRole={currentUser.role}
             />
           )}
+
+          {/* Generic Embedded Web App View if menu is linked to an external web app URL */}
+          {(() => {
+            const activeMenu = sidebarMenuItems.find(m => m.id === currentModule);
+            const standardInternalModules = [
+              'single_board', 'stock_monitoring', 'stock_mutation', 'general_monitoring',
+              'ai_verification_bot', 'process_cengkeh', 'process_tembakau', 'process_krosok',
+              'process_blend', 'log_surat', 'hr_karyawan', 'hr_presensi', 'hr_kpi',
+              'hr_recruitment', 'purchase_spp', 'crm_clients'
+            ];
+
+            // If it's a custom module OR an internal module explicitly configured with embedded webAppUrl
+            if (activeMenu?.webAppUrl && activeMenu.openMode === 'embedded' && (!standardInternalModules.includes(currentModule) || currentModule === 'gas_router' || currentModule === 'formula_blend')) {
+              return (
+                <GenericEmbeddedAppView
+                  menuItem={activeMenu}
+                  userRole={currentUser.role}
+                  onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
+                  onNavigateHome={() => handleSelectModule('single_board')}
+                />
+              );
+            }
+            return null;
+          })()}
         </main>
       </div>
 

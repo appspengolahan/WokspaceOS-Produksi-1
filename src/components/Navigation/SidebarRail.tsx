@@ -19,7 +19,9 @@ import {
   SlidersHorizontal,
   Award,
   Edit2,
-  Bot
+  Bot,
+  Globe,
+  ExternalLink
 } from 'lucide-react';
 import { UserRole, SidebarMenuItem } from '../../types';
 import { PWAInstallButton } from '../PWAInstallButton';
@@ -168,6 +170,20 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
                 </span>
               )}
 
+              {/* External Web App URL Indicator Badge */}
+              {item.webAppUrl && !isCollapsed && (
+                <span 
+                  className={`p-1 rounded-md transition ${isActive ? 'text-white/90 bg-white/10' : 'text-emerald-400 bg-emerald-500/10 group-hover:bg-emerald-500/20'}`}
+                  title={`Tersambung ke Web App: ${item.webAppUrl} (${item.openMode === 'external_tab' ? 'Buka Tab Baru' : 'Embedded'})`}
+                >
+                  {item.openMode === 'external_tab' ? (
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  ) : (
+                    <Globe className="w-3.5 h-3.5" />
+                  )}
+                </span>
+              )}
+
               {/* Dynamic Badge */}
               {dynamicBadge !== undefined && (
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full shadow-xs ${
@@ -181,8 +197,13 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
 
               {/* Floating Tooltip in Collapsed Rail Mode */}
               {isCollapsed && (
-                <div className="absolute left-full ml-3 px-3 py-2 bg-slate-950 text-white text-sm font-semibold rounded-xl shadow-2xl border border-slate-800 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  {item.name}
+                <div className="absolute left-full ml-3 px-3 py-2 bg-slate-950 text-white text-sm font-semibold rounded-xl shadow-2xl border border-slate-800 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 flex items-center gap-2">
+                  <span>{item.name}</span>
+                  {item.webAppUrl && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      Web App Live
+                    </span>
+                  )}
                 </div>
               )}
             </button>
