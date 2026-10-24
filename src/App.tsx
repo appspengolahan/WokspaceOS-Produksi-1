@@ -61,7 +61,7 @@ export default function App() {
   const [isAccessModalOpen, setIsAccessModalOpen] = useState<boolean>(false);
   const [isEditMenuModalOpen, setIsEditMenuModalOpen] = useState<boolean>(false);
 
-  // Dynamic Sidebar Menu Items state (Editable by Developer)
+  // Dynamic Sidebar Menu Items state (Editable by Developer, Synced Across Devices)
   const [sidebarMenuItems, setSidebarMenuItems] = useState<SidebarMenuItem[]>(() => {
     const saved = localStorage.getItem('pp1_sidebar_menu_v1');
     if (saved) {
@@ -82,16 +82,67 @@ export default function App() {
     return INITIAL_SIDEBAR_MENU;
   });
 
-  const handleSaveSidebarMenuItems = (updatedItems: SidebarMenuItem[]) => {
+  // Automatically fetch synchronized menu configuration from server on mount (for phones, tablets & other devices)
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchServerMenuConfig = async () => {
+      try {
+        const res = await fetch('/api/settings/menu');
+        const data = await res.json();
+        if (isMounted && data && data.success && Array.isArray(data.items) && data.items.length > 0) {
+          // Merge in any newly introduced core modules
+          const merged = [...data.items];
+          for (const initialItem of INITIAL_SIDEBAR_MENU) {
+            if (!merged.some((m: SidebarMenuItem) => m.id === initialItem.id)) {
+              merged.push(initialItem);
+            }
+          }
+          setSidebarMenuItems(merged);
+          localStorage.setItem('pp1_sidebar_menu_v1', JSON.stringify(merged));
+        }
+      } catch (err) {
+        // Fallback to local storage if offline
+        console.warn('Gagal memuat konfigurasi menu dari server, menggunakan cache lokal:', err);
+      }
+    };
+
+    fetchServerMenuConfig();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSaveSidebarMenuItems = async (updatedItems: SidebarMenuItem[]) => {
     setSidebarMenuItems(updatedItems);
     localStorage.setItem('pp1_sidebar_menu_v1', JSON.stringify(updatedItems));
-    showToast('Nama-nama menu sidebar berhasil diperbarui!');
+
+    // Push to server so phone, tablet, and all other devices automatically sync
+    try {
+      await fetch('/api/settings/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: updatedItems })
+      });
+      showToast('Konfigurasi menu berhasil disimpan & disinkronkan ke semua perangkat (HP, Tab, PC)!');
+    } catch (e) {
+      console.warn('Gagal menyimpan konfigurasi ke server:', e);
+      showToast('Tersimpan di perangkat ini (server offline).');
+    }
   };
 
-  const handleResetSidebarMenuItems = () => {
+  const handleResetSidebarMenuItems = async () => {
     setSidebarMenuItems(INITIAL_SIDEBAR_MENU);
     localStorage.removeItem('pp1_sidebar_menu_v1');
-    showToast('Nama-nama menu sidebar telah direset ke bawaan default PP1.');
+    try {
+      await fetch('/api/settings/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: INITIAL_SIDEBAR_MENU })
+      });
+      showToast('Menu sidebar telah direset ke bawaan default PP1 di semua perangkat.');
+    } catch {
+      showToast('Nama-nama menu sidebar telah direset ke bawaan default PP1.');
+    }
   };
 
   // User and RBAC state

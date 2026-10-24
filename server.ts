@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,6 +11,38 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: '10mb' }));
+
+// Persistent Server-Side Menu Settings File Path
+const SETTINGS_FILE_PATH = path.resolve(process.cwd(), 'src', 'data', 'sidebar_menu_config.json');
+
+// Endpoint: Get Shared Sidebar Menu Configuration
+app.get('/api/settings/menu', (req, res) => {
+  try {
+    if (fs.existsSync(SETTINGS_FILE_PATH)) {
+      const data = fs.readFileSync(SETTINGS_FILE_PATH, 'utf-8');
+      return res.json({ success: true, items: JSON.parse(data) });
+    }
+    return res.json({ success: false, items: null });
+  } catch (error: any) {
+    console.error('Error reading sidebar menu config:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Endpoint: Save Shared Sidebar Menu Configuration (Syncs to all devices)
+app.post('/api/settings/menu', (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ success: false, error: 'Format data menu tidak valid (harus array).' });
+    }
+    fs.writeFileSync(SETTINGS_FILE_PATH, JSON.stringify(items, null, 2), 'utf-8');
+    return res.json({ success: true, message: 'Konfigurasi menu berhasil disimpan di server.' });
+  } catch (error: any) {
+    console.error('Error saving sidebar menu config:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Shared Gemini API Client setup
 const ai = new GoogleGenAI({
