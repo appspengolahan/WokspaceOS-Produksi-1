@@ -322,8 +322,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Navbar (Full-Width Global Header on top of Sidebar & Main Content) */}
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
+      {/* Top Navbar: Locked / Fixed on top across 100% full-width */}
       <TopNavbar
         onToggleMobileMenu={() => setIsMobileDrawerOpen(true)}
         isSidebarCollapsed={isSidebarCollapsed}
@@ -341,9 +341,9 @@ export default function App() {
         onManualSync={handleManualSync}
       />
 
-      {/* Main Body with Sidebar Rail + Main Viewport */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar (Mini Rail Mode or Expanded) */}
+      {/* Main Body: Fixed Height under Header with Locked Sidebar Rail + Independent Main Viewport */}
+      <div className="flex-1 flex overflow-hidden min-h-0 relative">
+        {/* Left Sidebar: Locked in place with independent vertical scrollbar & quick slider buttons */}
         <SidebarRail
           currentModule={currentModule}
           onSelectModule={handleSelectModule}
@@ -355,8 +355,8 @@ export default function App() {
           onOpenEditMenuModal={() => setIsEditMenuModalOpen(true)}
         />
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 lg:p-6 pb-20 md:pb-8">
+        {/* Main Content Area: Scrolls independently without moving Header or Sidebar */}
+        <main className="flex-1 h-full overflow-y-auto overflow-x-hidden p-3 sm:p-5 lg:p-6 pb-24 md:pb-8">
           {/* Breadcrumb Navigation Trail */}
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4 font-medium">
             <button

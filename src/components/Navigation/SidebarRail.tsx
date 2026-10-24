@@ -15,6 +15,8 @@ import {
   Database,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Gauge,
   SlidersHorizontal,
   Award,
@@ -69,6 +71,36 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
   onOpenEditMenuModal,
 }) => {
   const isDeveloper = userRole === 'developer';
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollUp, setCanScrollUp] = React.useState(false);
+  const [canScrollDown, setCanScrollDown] = React.useState(false);
+
+  const checkScroll = React.useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const hasOverflow = el.scrollHeight > el.clientHeight;
+      setCanScrollUp(hasOverflow && el.scrollTop > 10);
+      setCanScrollDown(hasOverflow && el.scrollTop + el.clientHeight < el.scrollHeight - 10);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll, menuItems]);
+
+  const handleScrollUp = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ top: -180, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollDown = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ top: 180, behavior: 'smooth' });
+    }
+  };
 
   const filteredNavItems = menuItems.filter(item => {
     // 1. If hidden from sidebar, do not render in navigation
@@ -132,8 +164,24 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
         )}
       </div>
 
-      {/* Nav List */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 px-2 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800">
+      {/* Scroll Up Slider Control */}
+      {canScrollUp && (
+        <button
+          onClick={handleScrollUp}
+          className="w-full py-1 bg-slate-800/90 hover:bg-slate-700/90 text-sky-400 hover:text-white flex items-center justify-center border-b border-slate-700/60 shadow-md transition-all cursor-pointer z-10"
+          title="Geser Menu ke Atas"
+          aria-label="Scroll Up"
+        >
+          <ChevronUp className="w-4 h-4 animate-bounce" />
+        </button>
+      )}
+
+      {/* Nav List with Independent Scrollbar */}
+      <div 
+        ref={scrollContainerRef}
+        onScroll={checkScroll}
+        className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 px-2 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-600 scrollbar-track-slate-900/50"
+      >
         {!isCollapsed && isDeveloper && onOpenEditMenuModal && (
           <div className="px-2 pb-1 flex justify-end">
             <button
@@ -210,6 +258,18 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
           );
         })}
       </div>
+
+      {/* Scroll Down Slider Control */}
+      {canScrollDown && (
+        <button
+          onClick={handleScrollDown}
+          className="w-full py-1 bg-slate-800/90 hover:bg-slate-700/90 text-sky-400 hover:text-white flex items-center justify-center border-t border-slate-700/60 shadow-md transition-all cursor-pointer z-10"
+          title="Geser Menu ke Bawah"
+          aria-label="Scroll Down"
+        >
+          <ChevronDown className="w-4 h-4 animate-bounce" />
+        </button>
+      )}
 
       {/* PWA Install Quick Trigger in Expanded Sidebar */}
       {!isCollapsed && (
