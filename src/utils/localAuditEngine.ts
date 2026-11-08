@@ -50,9 +50,104 @@ export function generateComprehensiveAuditReport(
     minute: '2-digit',
   });
 
+  // Targeted response if custom instruction contains specific queries
+  const qLower = (customInstruction || '').toLowerCase();
+
+  // Scenario 1: Specific batch lookup
+  const matchedBatch = processRecords.find(b => qLower.includes(b.batchCode.toLowerCase()));
+  if (matchedBatch) {
+    const matchedMutations = mutations.filter(m => m.batchNumber === matchedBatch.batchCode);
+    const totalBatchOutKg = matchedMutations.reduce((sum, m) => sum + (m.quantityKg || 0), 0);
+    const batchVariance = totalBatchOutKg - matchedBatch.inputRawKg;
+
+    return `### 🔍 HASIL AUDIT SPESIFIK BATCH: [${matchedBatch.batchCode}]
+*Waktu Analisis: ${timestamp} WIB*
+*Auditor Core: AI Verification & Ground Truth Engine PP1*
+
+---
+
+#### 📌 1. Identitas & Rekonsiliasi Batch
+- **Nomor Batch:** \`${matchedBatch.batchCode}\`
+- **Jenis Pengolahan:** ${matchedBatch.processType}
+- **Lini Mesin:** ${matchedBatch.machineLine}
+- **Foreman Penanggung Jawab:** ${matchedBatch.foreman}
+- **Tanggal Proses:** ${matchedBatch.date}
+- **Status QC / Karantina:** **${matchedBatch.qcStatus}**
+
+#### ⚖️ 2. Neraca Berat & Rendemen
+- **Bahan Keluar Gudang (Mutasi):** ${totalBatchOutKg.toLocaleString('id-ID')} Kg (${matchedMutations.length} catatan mutasi)
+- **Input Bahan Mentah Mesin:** ${matchedBatch.inputRawKg.toLocaleString('id-ID')} Kg
+- **Output Produk Jadi:** ${matchedBatch.outputProcessedKg.toLocaleString('id-ID')} Kg
+- **Selisih Keluar vs Masuk:** **${batchVariance === 0 ? '0 Kg (Sinkron Sempurna)' : `${batchVariance > 0 ? '+' : ''}${batchVariance.toLocaleString('id-ID')} Kg`}**
+- **Rendemen Riil:** **${matchedBatch.rendemenPercent.toFixed(2)}%** ${matchedBatch.rendemenPercent < 90 ? '🔴 *(DI BAWAH TARGET MINIMAL 90%)*' : '🟢 *(MEMENUHI TARGET)*'}
+- **Kadar Air (Moisture):** **${matchedBatch.moisturePercent.toFixed(2)}%** ${matchedBatch.moisturePercent > 14 ? '⚠️ *(MELEBIHI BATAS AMAN 14%)*' : '🟢 *(AMAN)*'}
+
+#### 🛠️ 3. Evaluasi & Rekomendasi
+${matchedBatch.rendemenPercent < 90 ? `* Peringatan: Susut mesin mencapai ${(matchedBatch.inputRawKg - matchedBatch.outputProcessedKg).toLocaleString('id-ID')} Kg. Lakukan kalibrasi pisau pada ${matchedBatch.machineLine}.\n` : ''}${matchedBatch.moisturePercent > 14 ? `* Peringatan Kelembaban: Kadar air ${matchedBatch.moisturePercent}% rentan jamur. Tempatkan di ruang transit ber-blower.\n` : ''}${matchedBatch.qcStatus !== 'Lolos QC' ? `* Peringatan QC: Batch belum bersertifikat "Lolos QC". Dilarang masuk ke Gudang C (Blending).\n` : ''}
+*Seluruh data dihitung deterministik berdasarkan database operasional PP1.*`;
+  }
+
+  // Scenario 2: Rendemen query focus
+  if (qLower.includes('rendemen') || qLower.includes('susut') || qLower.includes('yield')) {
+    return `### 📊 LAPORAN ANALISIS RENDEMEN & EVALUASI SUSUT (YIELD LOSS AUDIT)
+*Waktu Analisis: ${timestamp} WIB*
+*Auditor Core: AI Verification & Ground Truth Engine PP1*
+
+---
+
+#### 🎯 1. Ringkasan Kinerja Rendemen Pabrik PP1
+* **Standar Target Rendemen PP1:** **≥ 90.00%**
+* **Rata-rata Rendemen Riil Saat Ini:** **${avgRendemen.toFixed(2)}%**
+* **Total Batch Teranalisis:** ${processRecords.length} Batch
+* **Batch di Bawah Standar (< 90%):** **${lowYieldBatches.length} Batch**
+
+#### 📋 2. Rincian Batch Rendemen Rendah & Kerugian Susut
+${lowYieldBatches.length > 0 ? lowYieldBatches.map((b, i) => {
+  const susutKg = b.inputRawKg - b.outputProcessedKg;
+  const normalSusutKg = b.inputRawKg * 0.10; // normal tolerance 10%
+  const abnormalSusutKg = Math.max(0, susutKg - normalSusutKg);
+  return `##### ${i + 1}. Batch [${b.batchCode}] - ${b.processType}
+- **Lini Mesin / Foreman:** ${b.machineLine} / ${b.foreman}
+- **Input Timbangan:** ${b.inputRawKg.toLocaleString('id-ID')} Kg ➔ **Output Jadi:** ${b.outputProcessedKg.toLocaleString('id-ID')} Kg
+- **Rendemen Riil:** **${b.rendemenPercent}%** (Defisit: ${(90 - b.rendemenPercent).toFixed(2)}% dari standar)
+- **Akumulasi Susut:** ${susutKg.toLocaleString('id-ID')} Kg (Estimasi Susut Abnormal: **${abnormalSusutKg.toLocaleString('id-ID')} Kg**)
+- **Kadar Air:** ${b.moisturePercent}% | **Status QC:** ${b.qcStatus}`;
+}).join('\n\n') : '🟢 *Tidak ditemukan batch dengan rendemen di bawah standar 90.00%. Seluruh lini mesin beroperasi efisien.*'}
+
+#### 🛠️ 3. Rekomendasi Teknis untuk Kepala Pengolahan & Foreman
+1. **Inspeksi Pisau Mesin Rajang:** Evaluasi ketajaman pisau dan celah conveyor feed pada lini ${lowYieldBatches.map(b => b.machineLine).join(', ') || 'produksi'}.
+2. **Pengecekan Debu Tembakau (Tobacco Scrap):** Cek filter cyclone debu tembakau untuk memastikan bahan tidak terbuang ke exhaust.
+3. **Tera Timbangan Input vs Output:** Lakukan verifikasi load-cell timbangan duduk di lantai produksi.`;
+  }
+
+  // Scenario 3: Moisture query focus
+  if (qLower.includes('kadar air') || qLower.includes('moisture') || qLower.includes('jamur') || qLower.includes('kelembaban')) {
+    return `### 💧 LAPORAN AUDIT KADAR AIR (MOISTURE CONTENT) & RISIKO GUDANG
+*Waktu Analisis: ${timestamp} WIB*
+*Auditor Core: AI Verification & Ground Truth Engine PP1*
+
+---
+
+#### 🎯 1. Standar Toleransi Kadar Air PP1
+* **Batas Toleransi Aman:** **12.00% - 14.00%**
+* **Rata-rata Kadar Air Terukur:** **${avgMoisture.toFixed(2)}%**
+* **Batch Melebihi Batas Aman (> 14%):** **${highMoistureBatches.length} Batch**
+
+#### 📋 2. Rincian Batch Berisiko
+${highMoistureBatches.length > 0 ? highMoistureBatches.map((b, i) => `##### ${i + 1}. Batch [${b.batchCode}] (${b.processType})
+- **Kadar Air Terukur:** **${b.moisturePercent}%** ⚠️ *(Risiko Jamur)*
+- **Lini / Foreman:** ${b.machineLine} / ${b.foreman}
+- **Status QC:** ${b.qcStatus}
+- **Rekomendasi:** Berikan aerasi atau pengeringan ulang sebelum dimasukkan ke Gudang C.`).join('\n\n') : '🟢 *Seluruh batch memenuhi batas toleransi kadar air aman (≤ 14.00%). Risiko jamur nihil.*'}
+
+#### 🛠️ 3. Mitigasi Ruang Simpan
+- Batch dengan MC > 14% dilarang ditumpuk di atas 5 palet dan wajib sirkulasi udara aktif.`;
+  }
+
+  // Default: Comprehensive Audit Report
   return `### 📋 LAPORAN VERIFIKASI SILANG OPERASIONAL DIVISI PRODUKSI 1 (PP1)
 *Waktu Inspeksi: ${timestamp} WIB*
-*Auditor Core: AI Verification & Operational Audit Engine PP1*
+*Auditor Core: AI Verification & Ground Truth Engine PP1*
 ${customInstruction ? `*Instruksi Fokus: "${customInstruction}"*\n` : ''}
 ---
 

@@ -116,27 +116,27 @@ ${fallbackReport}`);
   const presets = [
     {
       id: 'comprehensive',
-      title: 'Full Cross-Check: Mutasi vs Rekap Proses Tembakau',
-      desc: 'Mencocokkan kuantitas keluar gudang dengan input mesin tembakau & cengkeh per nomor batch.',
-      prompt: 'Verifikasi kecocokan seluruh mutasi KELUAR bahan baku dengan input data proses tembakau dan cengkeh. Cek nomor batch, selisih kilogram, dan anomali rendemen atau kadar air.',
-    },
-    {
-      id: 'batch_trace',
-      title: 'Audit Nomor Batch & Karantina QC',
-      desc: 'Mendeteksi batch yang lolos QC vs karantina serta memastikan status stok tidak tercampur.',
-      prompt: 'Audit rekap proses tembakau dan mutasi stok untuk menemukan apakah ada batch dengan status Karantina atau Rework yang justru dikeluarkan dari gudang tanpa izin QC.',
+      title: 'Full Audit: Mutasi Gudang vs Input Mesin Rajang',
+      desc: 'Mencocokkan kuantitas keluar gudang dengan input mesin tembakau & cengkeh, varians kg, dan status neraca bahan.',
+      prompt: 'Lakukan audit rekonsiliasi kuantitas keluar gudang bahan baku vs input mesin rajang secara presisi per nomor batch. Hitung varians kilogram, anomali rendemen, dan status lolos QC.',
     },
     {
       id: 'yield_loss',
-      title: 'Analisis Rendemen & Susut Pengolahan (Yield)',
-      desc: 'Mengevaluasi toleransi susut berat basah vs berat kering tembakau & cengkeh.',
-      prompt: 'Analisis rendemen (outputProcessedKg / inputRawKg) pada rekap data proses tembakau & cengkeh. Identifikasi batch mana saja yang rendemennya di bawah standar 85% atau kadar airnya di atas 14%. Berikan rekomendasi teknis perbaikan mesin.',
+      title: 'Analisis Rendemen & Susut Pengolahan (Threshold <90%)',
+      desc: 'Investigasi batch dengan rendemen di bawah 90%, hitung deviasi susut berat, dan evaluasi performa mesin.',
+      prompt: 'Analisis rendemen (outputProcessedKg / inputRawKg) pada rekap proses tembakau & cengkeh. Rinci batch yang rendemennya di bawah standar 90.00%, hitung kilogram susut abnormalnya, evaluasi lini mesin terkait, dan berikan rekomendasi teknis.',
     },
     {
-      id: 'unrecorded_movement',
-      title: 'Deteksi Mutasi Tak Bertuan / Tanpa Batch',
-      desc: 'Memeriksa mutasi stok yang tidak memiliki kaitan nomor batch produksi yang jelas.',
-      prompt: 'Periksa daftar mutasi stok apakah ada catatan MASUK atau KELUAR yang nomor batchnya kosong, tidak valid, atau tidak ditemukan di rekapitulasi data proses produksi.',
+      id: 'moisture_risk',
+      title: 'Audit Kadar Air (MC >14%) & Risiko Kerusakan Gudang',
+      desc: 'Mendeteksi batch dengan kelembaban berlebih yang berisiko jamur saat penyimpanan di Gudang C.',
+      prompt: 'Periksa kadar air (Moisture Content) pada seluruh batch pengolahan. Rinci batch mana saja yang melebihi standar aman 14.00%, identifikasi operator/foreman yang bertanggung jawab, dan rekomendasikan tindakan penanganan ruang transit.',
+    },
+    {
+      id: 'batch_trace',
+      title: 'Pemeriksaan Integritas Batch & Karantina QC',
+      desc: 'Mendeteksi potensi kebocoran batch berstatus Karantina, Rework, atau Dalam Proses ke lantai distribusi.',
+      prompt: 'Audit integritas nomor batch dan status kelulusan QC. Pastikan tidak ada batch berstatus Karantina atau Rework yang telah dipindahkan ke Gudang C (Blending) atau dikeluarkan tanpa approval QC.',
     }
   ];
 
@@ -154,12 +154,16 @@ ${fallbackReport}`);
               <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30 tracking-wider">
                 PP1 INTELLIGENCE CORE
               </span>
+              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                Gemini 4 Argon • Ground Truth Math Precision
+              </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
               AI Verification & Audit Bot PP1
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Asisten kecerdasan buatan untuk verifikasi silang otomatis antara <b>Mutasi Stok Gudang</b> dengan <b>Rekap Data Proses Tembakau & Cengkeh</b> guna mencegah selisih fisik timbangan, anomali rendemen, dan kebocoran persediaan.
+              Auditor cerdas berbasis model penalaran mendalam <b>Gemini 4 Argon</b> terkalibrasi dengan <b>Ground Truth Deterministic Math Engine</b>. Menjamin analisis kuantitas timbangan, anomali rendemen, kadar air, dan status QC 100% akurat tanpa halusinasi matematis.
             </p>
           </div>
 

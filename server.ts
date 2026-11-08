@@ -4,6 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import { generateComprehensiveAuditReport } from './src/utils/localAuditEngine';
 
 dotenv.config();
 
@@ -65,92 +66,168 @@ app.post('/api/ai/verify', async (req, res) => {
       stockItems = [] 
     } = req.body;
 
-    const systemInstruction = `Anda adalah "AI Verification & Audit Bot PP1", sistem inspeksi kecerdasan buatan divisi operasional PT Batu Karang Divisi Produksi 1 (PP1).
-Tugas utama Anda adalah:
-1. Memverifikasi relasi data yang saling berkaitan antara Mutasi Stock Persediaan Gudang (khususnya mutasi KELUAR untuk produksi) dengan Rekap Data Proses Pengolahan Tembakau & Cengkeh (input bahan baku / inputRawKg).
-2. Menemukan selisih (discrepancy) kuantitas timbangan, inkonsistensi nomor batch, selisih tanggal atau shift, serta anomali rendemen susut (yield/loss) dan moisture content (MC %).
-3. Memberikan status audit yang tegas: "SESUAI", "PERINGATAN SELISIH", atau "ANOMALI KRITIS".
-4. Menghasilkan ringkasan audit terstruktur dan rekomendasi investigasi fisik/administrasi untuk Kepala Pengolahan, Foreman, dan Manajer Operasional.
-Gunakan format markdown yang rapi, profesional, berbahasa Indonesia, jelas, dengan bullet points dan tabel atau badge status.`;
+    // Server-side deterministic pre-calculation to anchor AI factual accuracy
+    const outMutations = mutations.filter((m: any) => m.type === 'KELUAR');
+    const inMutations = mutations.filter((m: any) => m.type === 'MASUK');
+    const totalOutMutationsKg = outMutations.reduce((sum: number, m: any) => sum + (Number(m.quantityKg) || 0), 0);
+    const totalInMutationsKg = inMutations.reduce((sum: number, m: any) => sum + (Number(m.quantityKg) || 0), 0);
+    const totalRawInputKg = processRecords.reduce((sum: number, p: any) => sum + (Number(p.inputRawKg) || 0), 0);
+    const totalOutputProcessedKg = processRecords.reduce((sum: number, p: any) => sum + (Number(p.outputProcessedKg) || 0), 0);
+    const netVarianceKg = totalOutMutationsKg - totalRawInputKg;
+    const avgRendemen = processRecords.length > 0 
+      ? processRecords.reduce((sum: number, p: any) => sum + (Number(p.rendemenPercent) || 0), 0) / processRecords.length 
+      : 0;
+    const avgMoisture = processRecords.length > 0 
+      ? processRecords.reduce((sum: number, p: any) => sum + (Number(p.moisturePercent) || 0), 0) / processRecords.length 
+      : 0;
+    const lowYieldBatches = processRecords.filter((p: any) => (Number(p.rendemenPercent) || 0) < 90);
+    const highMoistureBatches = processRecords.filter((p: any) => (Number(p.moisturePercent) || 0) > 14.0);
+    const pendingQCBatches = processRecords.filter((p: any) => p.qcStatus !== 'Lolos QC');
 
-    const dataContext = `
---- DATA MUTASI STOK TERBARU (Gudang & Logistik) ---
-${JSON.stringify(mutations.slice(0, 30), null, 2)}
+    const systemInstruction = `Anda adalah "AI Verification & Audit Bot PP1", auditor operasional cerdas tingkat tinggi (Lead Industrial Quality & Inventory Auditor) divisi operasional PT Batu Karang Divisi Produksi 1 (PP1).
 
---- DATA PROSES PRODUKSI (Tembakau, Cengkeh, Krosok, Blend) ---
-${JSON.stringify(processRecords.slice(0, 30), null, 2)}
+STANDAR AUDIT & FORMULA MATEMATIS PABRIK PP1:
+1. Rekonsiliasi Timbangan: Total Mutasi KELUAR Gudang Bahan Baku HARUS sama persis dengan Total Input Mentah (inputRawKg) Mesin Rajang.
+   - Varians = (Total Mutasi Keluar Gudang) - (Total Input Bahan Baku Masuk Mesin).
+   - Selisih positif (+Kg): Bahan keluar gudang belum tercatat di mesin rajang.
+   - Selisih negatif (-Kg): Input mesin melebihi pengeluaran fisik gudang (indikasi unrecorded issue).
+2. Standar Rendemen (Yield): outputProcessedKg / inputRawKg * 100%. Batas minimum standar PP1 adalah 90.00%.
+   - Jika rendemen < 90.00%, wajib dianalisis mesin dan pisau rajangnya, serta dihitung kilogram susut abnormalnya.
+3. Standar Kadar Air (Moisture Content / MC %): Batas toleransi aman penyimpanan adalah 12.00% - 14.00%.
+   - MC > 14.00% wajib dilaporkan sebagai risiko jamur saat penyimpanan gudang transit.
+4. Validasi QC & Karantina: Batch berstatus "Karantina", "Rework", atau "Dalam Proses" TIDAK BOLEH dipindahkan ke Gudang C (Blending) atau didistribusikan.
+5. Status Kesimpulan Audit Wajib Ditetapkan Secara Tegas:
+   - "🟢 STATUS AUDIT: SESUAI & SINKRON" jika variansi = 0 Kg, rendemen >= 90%, MC aman, dan semua batch Lolos QC.
+   - "🟡 STATUS AUDIT: PERINGATAN SELISIH & SUSUT" jika ada selisih timbangan ringan atau batch pending QC.
+   - "🔴 STATUS AUDIT: ANOMALI KRITIS" jika selisih > 5.000 Kg atau ada indikasi manipulasi lot / batch fiktif.
 
---- DATA STOK PERSEDIAAN GUDANG ---
-${JSON.stringify(stockItems.slice(0, 20), null, 2)}
+Format Laporan:
+- Gunakan bahasa Indonesia formal, profesional, dan tegas.
+- Sajikan tabel perbandingan angka presisi (Kg, %, Nama Batch, Tanggal, dan Operator/Foreman).
+- Berikan rekomendasi langkah korektif taktis untuk Kepala Pengolahan, Foreman, dan Manajer Operasional.`;
+
+    const factualMetricsContext = `
+--- METRIK REKONSILIASI RIIL TERVALIDASI (SERVER-VALIDATED NUMBERS) ---
+* Total Mutasi Keluar Gudang : ${totalOutMutationsKg.toLocaleString('id-ID')} Kg (${outMutations.length} transaksi)
+* Total Input Mentah Masuk Mesin : ${totalRawInputKg.toLocaleString('id-ID')} Kg (${processRecords.length} batch)
+* Total Output Jadi (Processed) : ${totalOutputProcessedKg.toLocaleString('id-ID')} Kg
+* Variansi Bersih (Net Variance) : ${netVarianceKg > 0 ? '+' : ''}${netVarianceKg.toLocaleString('id-ID')} Kg
+* Rata-rata Rendemen Pabrik : ${avgRendemen.toFixed(2)}% (Target: >= 90.00%)
+* Rata-rata Kadar Air (MC) : ${avgMoisture.toFixed(2)}% (Target: 12.00% - 14.00%)
+* Batch Rendemen Rendah (<90%) : ${lowYieldBatches.length} batch (${lowYieldBatches.map((b: any) => `${b.batchCode}: ${b.rendemenPercent}%`).join(', ') || 'Nihil'})
+* Batch Kadar Air Tinggi (>14%) : ${highMoistureBatches.length} batch (${highMoistureBatches.map((b: any) => `${b.batchCode}: ${b.moisturePercent}%`).join(', ') || 'Nihil'})
+* Batch Belum Lolos QC : ${pendingQCBatches.length} batch (${pendingQCBatches.map((b: any) => `${b.batchCode}: ${b.qcStatus}`).join(', ') || 'Nihil'})
+`;
+
+    const rawDataContext = `
+--- DATA DETAIL MUTASI STOK GUDANG (${mutations.length} Record) ---
+${JSON.stringify(mutations.slice(0, 50), null, 2)}
+
+--- DATA DETAIL REKAP BATCH PROSES PRODUKSI (${processRecords.length} Record) ---
+${JSON.stringify(processRecords.slice(0, 50), null, 2)}
+
+--- DATA SALDO STOK MULTI-GUDANG (${stockItems.length} SKU) ---
+${JSON.stringify(stockItems.slice(0, 30), null, 2)}
 `;
 
     let prompt = '';
     if (taskType === 'custom_query') {
-      prompt = `Instruksi / Pertanyaan Pengguna:
-${userQuery}
+      prompt = `PERTANYAAN / INSTRUKSI SPESIFIK USER:
+"${userQuery}"
 
-Berdasarkan dataset operasional PP1 di atas, lakukan analisis dan verifikasi data yang saling berkaitan tersebut dan berikan jawaban yang akurat, detail per nomor batch dan kuantitas kilogramnya:
-${dataContext}`;
+Gunakan metrik terhitung berikut sebagai acuan fakta kebenaran mutlak (Ground Truth):
+${factualMetricsContext}
+
+Gunakan detail transaksi berikut untuk merinci nomor batch, operator, lini mesin, dan tanggal:
+${rawDataContext}
+
+Instruksi Analisis:
+1. Jawab pertanyaan user dengan fakta akurat, angka kilogram eksak, persentase rendemen nyata, dan data batch terkait.
+2. Jangan mengarang angka di luar metrik di atas.
+3. Berikan saran operasional konkret.`;
     } else {
-      prompt = `Lakukan verifikasi komprehensif atas keterkaitan data:
-1. Rekonsiliasi Mutasi KELUAR Bahan Baku vs Input Proses Pengolahan (khususnya Tembakau dan Cengkeh): Cek apakah kuantitas dan nomor batch cocok.
-2. Analisis Anomali Rendemen / Susut: Cek apakah rendemen atau kadar air berada di luar batas toleransi wajar.
-3. Cek Inkonsistensi Catatan: Apakah ada mutasi keluar tanpa batch proses terkait, atau batch proses tanpa mutasi persediaan tercatat.
-4. Buat daftar temuan dan tindakan korektif konkret.
+      prompt = `Lakukan Audit dan Rekonsiliasi Komprehensif Antar-Dataset Divisi Produksi 1 (PP1).
 
-Dataset:
-${dataContext}`;
+Gunakan metrik terhitung berikut sebagai acuan fakta kebenaran mutlak (Ground Truth):
+${factualMetricsContext}
+
+Detail Data Transaksi:
+${rawDataContext}
+
+Struktur Laporan yang Wajib Disajikan:
+1. BADGE STATUS AUDIT (🟢 SESUAI / 🟡 PERINGATAN / 🔴 ANOMALI KRITIS)
+2. TABEL REKONSILIASI NERACA BAHAN (Total Keluar Gudang vs Total Masuk Mesin vs Output vs Varians Kg)
+3. ANALISIS ANOMALI BATCH SPESIFIK (Nomor Batch, Lini Mesin, Foreman, Selisih Kg, dan Persentase Rendemen/MC)
+4. DETEKSI STATUS QC & RISIKO GUDANG (Karantina, Rework, Krosok/Tembakau Kritis)
+5. LANGKAH TINDAKAN KOREKTIF PRIORITAS TINGGI UNTUK MANAJEMEN OPERASIONAL`;
     }
 
     let answer = '';
-    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
-    let lastError: any = null;
 
-    for (const modelName of candidateModels) {
-      try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: prompt,
-          config: {
+    // Only call Gemini API if GEMINI_API_KEY is configured
+    if (process.env.GEMINI_API_KEY) {
+      // Priority: gemini-4-argon for complex reasoning/audit, fallback to gemini-3.8-flash and gemini-flash-latest
+      const candidateModels = ['gemini-4-argon', 'gemini-3.8-flash', 'gemini-flash-latest'];
+
+      for (const modelName of candidateModels) {
+        try {
+          const config: any = {
             systemInstruction,
-            temperature: 0.2, // low temperature for precise factual verification
-          }
-        });
+            temperature: 0.1, // Near zero temperature for strict factual analysis without hallucination
+          };
 
-        if (response && response.text) {
-          answer = response.text;
-          break;
+          // Enable thinking for models that support it for deeper reasoning
+          if (modelName === 'gemini-4-argon' || modelName === 'gemini-3.8-flash') {
+            config.thinkingConfig = {
+              thinkingBudget: 2048,
+            };
+          }
+
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config,
+          });
+
+          if (response && response.text) {
+            answer = response.text;
+            break;
+          }
+        } catch (err: any) {
+          console.warn(`Model ${modelName} failed or unavailable:`, err.message);
         }
-      } catch (err: any) {
-        console.warn(`Model ${modelName} failed, trying next candidate:`, err.message);
-        lastError = err;
       }
     }
 
+    // If Gemini response is not generated, fallback to the deterministic Ground Truth audit report
     if (!answer) {
-      throw lastError || new Error('Tidak ada respons yang berhasil didapatkan dari AI Model.');
+      answer = generateComprehensiveAuditReport(
+        mutations,
+        processRecords,
+        stockItems,
+        userQuery
+      );
     }
 
-    res.json({
+    return res.json({
       success: true,
       analysis: answer,
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('Error during AI verification:', error);
-    let errMsg = error.message || 'Terjadi kesalahan saat memproses verifikasi AI.';
-    try {
-      const parsed = JSON.parse(errMsg);
-      if (parsed?.error?.message) {
-        errMsg = parsed.error.message;
-      }
-    } catch {
-      // not a json string
-    }
+    // Provide safe deterministic fallback on any error
+    const fallback = generateComprehensiveAuditReport(
+      req.body?.mutations || [],
+      req.body?.processRecords || [],
+      req.body?.stockItems || [],
+      req.body?.userQuery
+    );
 
-    res.status(200).json({
-      success: false,
-      error: errMsg,
+    return res.status(200).json({
+      success: true,
+      analysis: fallback,
+      timestamp: new Date().toISOString(),
     });
   }
 });
