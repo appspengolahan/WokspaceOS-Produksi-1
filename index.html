@@ -17,6 +17,26 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      // Suppress benign development WebSocket closure errors caused by disabled HMR / cloud proxy in preview
+      window.addEventListener('error', function (event) {
+        var msg = (event && event.message) ? String(event.message) : '';
+        var filename = (event && event.filename) ? String(event.filename) : '';
+        if (msg.includes('WebSocket') || filename.includes('@vite/client') || (event.error && String(event.error.stack || '').includes('@vite/client'))) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          return true;
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function (event) {
+        var reason = event ? String(event.reason || '') : '';
+        if (reason.includes('WebSocket') || reason.includes('@vite/client')) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          return true;
+        }
+      }, true);
+    </script>
   </head>
   <body class="bg-slate-100 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100 min-h-screen">
     <div id="root"></div>
